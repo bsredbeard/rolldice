@@ -3,22 +3,25 @@ Roll some dice
 
 A simple hubot script that listens for the following strings in chat
 
-    !roll
-    !roll 2d6
+    @hubot roll
+    @hubot roll 2d6
 
-The script understands basic dice notation, currently with one modifier.
+The script understands basic dice notation, with a few modifiers.
 
     d6
     d6 + 2
     4d6k3 - 1
     d4 + 2d12 + 3d3
+    4d6dl2r1 + 8
     
-The modifier supported is 'k' for 'keep', e.g. 6d6k4, roll 6 d6, keep highest 4 and reroll rest.
+You can also ask hubot to output the syntax for rolls
+
+    @hubot roll syntax
 
 ## Issues/contributing
 
-I won't claim the code is pretty, but it seems to be pretty functional. Issues can be logged in my github, but I won't promise that this project takes priority in my life. Issues with pull requests will be considered a much higher priority than those without.
+I'm open to contributions with pull requests. This is not a primary project for me in any way, so don't expect a lot of expedience on issues.
 
 ## License
 
-I've licensed this script under the MIT license.
+This script has been released under the MIT license. See ./LICENSE for more details.
