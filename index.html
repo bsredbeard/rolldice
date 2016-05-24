@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Roll some dice?</title>
+    <style type="text/css">
+    *{
+      box-sizing:border-box;
+    }
+    html{
+      background-color:#ccc;
+    }
+    body{
+      background-color:white;
+      font-family: sans-serif;
+      max-width:600px;
+      min-height:100vh;
+      margin:0 auto;
+      padding: 0 10px 2em;
+      border-left:1px solid #bbb;
+      border-right:1px solid #bbb;
+    }
+    body::before,body::after{
+      content:' ';
+      display:block;
+      height:1px;
+      overflow:hidden;
+    }
+    .help{
+      font-size:85%;
+      margin-top:0.75em;
+    }
+    #output:empty{
+      display:none;
+    }
+    #output{
+      margin-top:1em;
+    }
+    .roll-title{
+      font-weight:bold;
+      font-family:monospace;
+      font-size:1.5em;
+    }
+    button::after{
+      content: '\2685';
+    }
+    </style>
+  </head>
+  <body>
+    <h1>hubot-rolldice</h1>
+    <p>
+      This project is meant to be used as a hubot plugin to roll some dice. If you don't have your hubot handy, you can just roll some dice right here.
+    </p>
+    <form>
+      <label>roll: <input type="text" id="dice" value="2d6" /></label>
+      <button type="submit">
+        Roll 'em
+      </button>
+      <div class="help">Try entering <em>help</em> to see the roll syntax</div>
+    </form>
+    <div id="output"></div>
+    <script type="text/javascript" src="browser.sfx.js"></script>
+  </body>
+</html>
