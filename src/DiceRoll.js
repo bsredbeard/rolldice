@@ -1,10 +1,23 @@
 var RollOptions = require('./RollOptions');
 
+var constantExpressions = {
+  'f': function () {
+    var sides = [-1, 0, 1];
+    var choice = Math.floor(Math.random() * sides.length);
+    return sides[choice];
+  }
+};
+
 function roll(numberOfFaces){
   var primer = new Date().getTime() % 10;
   for(var jk = 0; jk < primer; jk++){
     Math.random();
   }
+
+  if (constantExpressions.hasOwnProperty(numberOfFaces)) {
+    return constantExpressions[numberOfFaces]();
+  }
+
   return Math.ceil(numberOfFaces * Math.random());
 }
 
@@ -51,7 +64,10 @@ function toString(){
 function DiceRoll(numDice, numFaces, options){
   if(!numDice) numDice = '1';
   this.numberOfDice = parseInt(numDice, 10);
-  this.numberOfFaces = parseInt(numFaces, 10);
+  if (constantExpressions.hasOwnProperty(numFaces))
+    this.numberOfFaces = numFaces;
+  else
+    this.numberOfFaces = parseInt(numFaces, 10);
   this.rollOptions = new RollOptions(options);
   this.results = {
     raw: [],
@@ -64,11 +80,13 @@ function DiceRoll(numDice, numFaces, options){
     this.numberOfDice = 1000;
     this.niceTry = true;
   }
+
+  var numFacesAcceptable = (!isNaN(this.numberOfFaces) && this.numberOfFaces > 1) ||
+                           constantExpressions.hasOwnProperty(this.numberOfFaces);
   
   this.isValid = !isNaN(this.numberOfDice)
-    && !isNaN(this.numberOfFaces)
+    && numFacesAcceptable
     && this.rollOptions.isValid
-    && this.numberOfFaces > 1
     && this.numberOfDice > 0;
     
   this.execute = execute.bind(this);
