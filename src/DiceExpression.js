@@ -22,7 +22,7 @@ function validate(){
       validStart = !(this.operations[0] instanceof DiceOperator);
       validEnd = !(this.operations[this.operations.length-1] instanceof DiceOperator);
     }
-    
+
     isValid = hasRolls && operationsValid && validStart && validEnd;
     
   }
@@ -75,7 +75,7 @@ function toString(){
 
 function DiceExpression(expr){
   var operations = [];
-  var diceNotation = /^\s*([+-])?\s*(\d*)d(\d+)([^\s+-]*)/i;
+  var diceNotation = /^\s*([+-])?\s*(\d*)d(\d+|f)([^\s+-]*)/i;
   
   var special = specialFunctions.getSpecial(expr);
   if(special){
