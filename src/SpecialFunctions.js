@@ -3,6 +3,7 @@ var syntax = [
   'syntax: <roll>[<operator><roll><operator><roll>...][<operator><constant>]',
   'roll: [<number of dice>]d<number of sides>[<modifiers>]',
   '      default number of dice: 1',
+  'number of sides: any integer, or f (for Fudge dice)',
   'operator: + or -',
   'constant: any integer',
   'modifiers:',
