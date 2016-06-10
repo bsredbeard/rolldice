@@ -1,6 +1,14 @@
 Roll some dice
 ---
 
+## Installation
+
+1. `npm install hubot-rolldice --save`
+2. Add a reference to `"hubot-rolldice"` in your external-scripts.json
+3. Deploy/run your hubot
+
+## How do things
+
 A simple hubot script that listens for the following strings in chat
 
     @hubot roll
@@ -24,4 +32,4 @@ I'm open to contributions with pull requests. This is not a primary project for 
 
 ## License
 
-This script has been released under the MIT license. See ./LICENSE for more details.
+This script has been released under the [MIT license](./LICENSE).
