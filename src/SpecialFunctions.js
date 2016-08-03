@@ -19,8 +19,8 @@ var syntax = [
 ].join('\n');
 
 var specialData = {
-  barrel: 'Donkey Kong rolls a barrel down the ramp and crushes you. -1000pts',
-  rick: 'No.',
+  barrel: 'https://i.ytimg.com/vi/ZaCzGqTXa70/hqdefault.jpg',
+  rick: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   katamari: 'Na naaaaa, na na na na na na, na na Katamari Damacy....',
   help: syntax,
   syntax: syntax
