@@ -46,11 +46,11 @@ describe('rolldice', function(){
     });
   });
   
-  it('should not appreciate the abstract humor of Rick Astley popping up everywhere', function(){
+  it('should post a youtube link to rick astleys hit single', function(){
     return room.user.say('user1', '@hubot roll rick').then(function(){
       expect(room.messages).to.deep.equal([
         ['user1', '@hubot roll rick'],
-        ['hubot', '@user1 No.']
+        ['hubot', '@user1 https://www.youtube.com/watch?v=dQw4w9WgXcQ']
       ]);
     })
   });
