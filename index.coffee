@@ -32,9 +32,6 @@
 Dice = require('./src/index')
 
 module.exports = (robot) ->
-  facts =
-    fact1: 'hi'
-
   robot.respond /roll$/i, (res) ->
     roll = new Dice 'd6'
     res.reply roll.toString()
