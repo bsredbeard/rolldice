@@ -1,6 +1,8 @@
 Roll some dice
 ---
 
+[![Build Status](https://travis-ci.org/mentalspike/rolldice.svg?branch=master)](https://travis-ci.org/mentalspike/rolldice)
+
 ## Installation
 
 1. `npm install hubot-rolldice --save`
