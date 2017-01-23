@@ -38,3 +38,5 @@ module.exports = (robot) ->
   robot.respond /roll\s+(.+)/i, (res) ->
     roll = new Dice res.match[1]
     res.reply roll.toString()
+  robot.hear /t(ableflip|f)( .*)?/i, (res) ->
+    res.send '┬──┬◡ﾉ(° -°ﾉ)'
