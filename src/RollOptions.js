@@ -1,9 +1,24 @@
+/**
+ * @callback rerollCallback
+ */
+
+/**
+ * Creates an expression to reroll values equal to a certain result
+ * @param {number} val - the forbidden value that triggers a reroll
+ * @returns {rerollCallback}
+ */
 function createBasicReroll(val){
   return function(diceValue){
     return diceValue === val;
   }
 }
 
+/**
+ * Creates an expression to reroll values less than a certain amount
+ * @param {number} val - the number to beat
+ * @param {boolean} [lte] - true if the expression is less-than-or-equal-to
+ * @returns {rerollCallback}
+ */
 function createLessThanReroll(val, lte){
   return function(diceValue){
     if(lte) {
@@ -13,6 +28,12 @@ function createLessThanReroll(val, lte){
   }
 }
 
+/**
+ * Creates an expression to reroll values greater than a certain amount
+ * @param {number} val - the number to beat
+ * @param {boolean} [gte] - true if the expression is greater-than-or-equal-to
+ * @returns {rerollCallback}
+ */
 function createGreaterThanReroll(val, gte){
   return function(diceValue){
     if(gte) {
@@ -22,6 +43,11 @@ function createGreaterThanReroll(val, gte){
   }
 }
 
+/**
+ * Returns true if a roll must be rerolled
+ * @param {number} num - the number that was rolled
+ * @returns {boolean} true if the roll must be re-rolled
+ */
 function needReroll(num){
   var rule;
   for(var jk in this.reroll){
@@ -35,34 +61,37 @@ function needReroll(num){
 
 /**
  * Parse the roll options out of the given options string
+ * @class
+ * @param {string} options - the options to parse for a given roll
  */
 function RollOptions(options){
   /**
-   * If truthy, keep only a certain number of dice from the roll
+   * @member {number} [keep] If truthy, keep only a certain number of dice from the roll
    */
   this.keep = false;
   /**
-   * If truthy, drop a certain number of dice from the roll
+   * @member {number} [drop] - If truthy, drop a certain number of dice from the roll
    */
   this.drop = false;
   /**
-   * If truthy, keep/drop the highest rolls
+   * @member {number} [highestRolls] - If truthy, keep/drop the highest rolls
    */
   this.highestRolls = false;
   /**
-   * If truthy, keep/drop the lowest rolls
+   * @member {number} [lowestRolls] - If truthy, keep/drop the lowest rolls
    */
   this.lowestRolls = false;
   /**
-   * Any rules to examine a roll and determine if it should be rerolled
+   * @member {rerollCallback[]} reroll - Any rules to examine a roll and determine if it should be rerolled
    */
   this.reroll = [];
   /**
-   * If these options were parsed successfully
+   * @member {boolean} isValid - If these options were parsed successfully
    */
   this.isValid = true;
   /**
    * Determine if a single roll needs to be rerolled by consulting this.reroll
+   * @func needReroll
    */
   this.needReroll = needReroll.bind(this);
   

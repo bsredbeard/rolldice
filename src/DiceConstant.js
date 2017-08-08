@@ -1,3 +1,7 @@
+/**
+ * Represents a constant numeric value, for use in dice expressions
+ * @param {string} val - the constant value to be parsed and used as part of the equation
+ */
 function DiceConstant(val){
   this.results = {
     total: 0

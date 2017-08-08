@@ -2,10 +2,7 @@ dist: trusty
 language: node_js
 node_js:
  - "4.2.3"
-before_script:
-  - npm install -g gulp
 install:
   - npm install
 script:
-  - gulp
   - npm test
