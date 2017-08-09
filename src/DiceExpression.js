@@ -1,5 +1,4 @@
 var DiceRoll = require('./DiceRoll');
-var RollOptions = require('./RollOptions');
 var DiceOperator = require('./DiceOperator');
 var DiceConstant = require('./DiceConstant');
 var specialFunctions = require('./SpecialFunctions');
