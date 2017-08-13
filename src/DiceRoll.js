@@ -1,4 +1,5 @@
 var RollOptions = require('./RollOptions');
+var MAX_REROLL_COUNT = 50;
 
 /**
  * Iterates through a number of random outputs to make random a little less predictable
@@ -36,19 +37,101 @@ function roll(numberOfFaces){
 }
 
 /**
+ * Recursively flattens an array
+ * @param {Array} arr - the array to flatten
+ */
+function flatten(arr){
+  if(!arr) return [];
+  var result = [];
+  for(var jk = 0; jk < arr.length; jk++){
+    if(arr[jk] instanceof Array){
+      result = result.concat(flatten(arr[jk]));
+    } else {
+      result.push(arr[jk]);
+    }
+  }
+  return result;
+}
+
+/**
+ * @typedef IndividualRollResult
+ * @prop {number[]} result - the accepted values for the current die roll
+ * @prop {number[]} raw - all rolls that were made for the current die roll
+ * @prop {number} highest - the highest roll seen in this die roll among all rerolled numbers
+ */
+
+/**
+ * Performs a "single" die roll and returns the resulting array of rolled values
+ * @param {(number|string)} numberOfFaces - the number of faces to roll
+ * @param {RollOptions} rollOptions - the options definition
+ * @returns {IndividualRollResult} - the roll results for this die
+ */
+function executeRollWithOptions(numberOfFaces, rollOptions){
+  var rolling = true,
+    rollValue = -1,
+    result = [],
+    rawRolls = [],
+    rerollCount = 0,
+    highest = Number.NEGATIVE_INFINITY;
+  
+  while(rolling && rerollCount < MAX_REROLL_COUNT){
+    rollValue = roll(numberOfFaces);
+    rawRolls.push(rollValue);
+
+    if(rollValue > highest){
+      highest = rollValue;
+    }
+
+    if(rollOptions.needReroll(rollValue)){
+      rerollCount++;
+    } else {
+      result.push(rollValue);
+  
+      if(rollOptions.explodingRolls){
+        while(rollValue === numberOfFaces){
+          rollValue = roll(numberOfFaces);
+          rawRolls.push(rollValue);
+          result.push(rollValue);
+        }
+      }
+  
+      rolling = false;
+    }
+
+  }
+  if(!result.length && highest > Number.NEGATIVE_INFINITY){
+    result.push(highest);
+  }
+  return {
+    result: result,
+    raw: rawRolls,
+    highest: highest
+  };
+}
+
+
+
+/**
  * Executes a dice roll, inspecting each roll against modifiers,
  * and deciding whether to keep or discard it.
  */
 function execute(){
-  var d, currentRolls = [];
+  var diceRoll,
+    rerollCounter = 0,
+    currentRolls = [],
+    stopExplodingYouCowards = [];
+  
   if(this.isValid){
     while(currentRolls.length < this.numberOfDice){
-      d = roll(this.numberOfFaces);
-      this.results.raw.push(d);
-      if(!this.rollOptions.needReroll(d)){
-        currentRolls.push(d);
-      }
+      diceRoll = executeRollWithOptions(this.numberOfFaces, this.rollOptions);
+
+      currentRolls.push(diceRoll.result);
+      this.results.raw.push(diceRoll.raw);
     }
+
+    // flatten the roll results before continuing
+    currentRolls = flatten(currentRolls);
+
     if(this.rollOptions.keep){
       currentRolls.sort();
       var desiredLength = this.rollOptions.keep;

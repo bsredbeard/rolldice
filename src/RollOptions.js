@@ -74,6 +74,10 @@ function RollOptions(options){
    */
   this.drop = false;
   /**
+   * @member {boolean} [explodingRolls] - if true, rolling the highest die face will cause an additional roll to happen
+   */
+  this.explodingRolls = false;
+  /**
    * @member {number} [highestRolls] - If truthy, keep/drop the highest rolls
    */
   this.highestRolls = false;
@@ -101,7 +105,7 @@ function RollOptions(options){
   // k4 or kh4 = keep 4 highest rolls
   // d4 or dl4 = drop 4 lowest rolls
   var optString = options;
-  var optionPattern = /^([rkd])([^rkd]+)/i;
+  var optionPattern = /^([rkd!])([^rkd!]*)/i;
   var parseKeepDrop = (function(kd, val, dfltHighest){
     if(val){
       val = val.toLowerCase();
@@ -171,6 +175,9 @@ function RollOptions(options){
           if(this.keep || this.drop) this.isValid = false;
           this.drop = true;
           parseKeepDrop('drop', optValue, false);
+          break;
+        case '!':
+          this.explodingRolls = true;
           break;
       }
       //advance the string
