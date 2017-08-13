@@ -1,9 +1,12 @@
 var DiceRoll = require('./DiceRoll');
-var RollOptions = require('./RollOptions');
 var DiceOperator = require('./DiceOperator');
 var DiceConstant = require('./DiceConstant');
 var specialFunctions = require('./SpecialFunctions');
 
+/**
+ * Checks the parsed operations of a dice expression for validity
+ * @returns {boolean} true if the expression is valid
+ */
 function validate(){
   var isValid = false;
   if(this.operations && this.operations.length){
@@ -29,6 +32,9 @@ function validate(){
   return isValid;
 }
 
+/**
+ * Executes the operations of a DiceExpression
+ */
 function execute(){
   if(this.isValid){
     var currentTotal = 0;
@@ -73,6 +79,14 @@ function toString(){
   }
 }
 
+/**
+ * Creates a new dice expression from an input string
+ * @class {DiceExpression}
+ * @param {string} expr - the dice notation expression to parse
+ * @example
+ * let exp = new DiceExpression('2d6 + 3');
+ * console.log(exp.toString());
+ */
 function DiceExpression(expr){
   var operations = [];
   var diceNotation = /^\s*([+-])?\s*(\d*)d(\d+|f)([^\s+-]*)/i;
@@ -123,15 +137,30 @@ function DiceExpression(expr){
       }
     }
   }
+  /**
+   * @member {DiceOperator[]} operations - the operations built up from the epxression string
+   */
   this.operations = operations;
-  // this.validate = validate.bind(this);
-  // this.execute = execute.bind(this);
+  /**
+   * @member {Function} toString - gets a formatted string notation of the results
+   */
   this.toString = toString.bind(this);
-  
+  /**
+   * @member {boolean} isValid - indicates if this DiceExpression was constructed from a valid string
+   */
   this.isValid = validate.apply(this);
+
   if(this.isValid){
     execute.apply(this);
   }
+
+  /**
+   * @member {number} result - if set, the result of the roll
+   */
+
+  /**
+  * @member {string} details - if set, the detailed rolls of a given expression
+  */
 }
 
 module.exports = DiceExpression;
