@@ -7,6 +7,7 @@ var syntax = [
   'operator: + or -',
   'constant: any integer',
   'modifiers:',
+  '  ! - exploding dice, a maximum roll value causes recursive reroll and summation',
   '  d<number> - drop the lowest X rolls from this group',
   '  k<number> - keep the highest X rolls from this group',
   '  h - alter either d or k modifier to affect the highest rolls, e.g. dh3: drop the highest 3 rolls',
