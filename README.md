@@ -47,6 +47,7 @@ number of sides: any integer, or f (for Fudge dice)
 operator: + or -
 constant: any integer
 modifiers:
+  ! - exploding dice, a maximum roll value causes recursive reroll and summation
   d<number> - drop the lowest X rolls from this group
   k<number> - keep the highest X rolls from this group
   h - alter either d or k modifier to affect the highest rolls, e.g. dh3: drop the highest 3 rolls
@@ -61,6 +62,10 @@ modifiers can be combined, but d and k are mutually exclusive
 ## Issues/contributing
 
 I'm open to contributions with pull requests. This is not a primary project for me in any way, so don't expect a lot of expedience on issues.
+
+## Hubot
+
+If you want my rolldice library for hubot, check npm for hubot-rolldice, or see the mentalspike/hubot-rolldice.
 
 ## License
 
