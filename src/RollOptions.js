@@ -1,3 +1,5 @@
+const StringInspector = require('./StringInspector');
+
 /**
  * @callback rerollCallback
  */
