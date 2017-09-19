@@ -1,4 +1,4 @@
-var syntax = [
+const syntax = [
   'Supports standard dice notation, as well as some extended functionality.',
   'syntax: <roll>[<operator><roll><operator><roll>...][<operator><constant>]',
   'roll: [<number of dice>]d<number of sides>[<modifiers>]',
@@ -19,18 +19,24 @@ var syntax = [
   'modifiers can be combined, but d and k are mutually exclusive'
 ].join('\n');
 
-var specialData = {
-  barrel: 'Donkey Kong rolls a barrel down the ramp and crushes you. -1000pts',
-  rick: 'No.',
-  katamari: 'Na naaaaa, na na na na na na, na na Katamari Damacy....',
-  help: syntax,
-  syntax: syntax
-}
+const specialData = new Map();
+specialData.set('barrel', 'Donkey Kong rolls a barrel down the ramp and crushes you. -1000pts');
+specialData.set('rick', 'No.');
+specialData.set('katamari', 'Na naaaaa, na na na na na na, na na Katamari Damacy....');
+specialData.set('help', syntax);
+specialData.set('syntax', syntax);
 
-function SpecialFunctions(){
-  this.getSpecial = function(expression){
-    if(expression && specialData.hasOwnProperty(expression)){
-      return specialData[expression];
+/**
+ * Exposes an api to check for special responses
+ */
+class SpecialFunctions{
+  /**
+   * Check for a special response to a roll argument
+   * @param {string} expression the roll expression to check against the special functions
+   */
+  getSpecial(expression){
+    if(expression && specialData.has(expression)){
+      return specialData.get(expression);
     }
     return null;
   }
