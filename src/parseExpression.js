@@ -1,68 +1,129 @@
-const StringInspector = require('./StringInspector');
+const math = require('mathjs');
 
-const whitespace = ' \t\r\n';
+const StringInspector = require('./StringInspector');
+const Value = require('./Value');
+const DiceValue = require('./DiceValue');
+
 const rollExpression = /^(\d*)d(\d+|[f])([kdhl!0-9]?)/;
 const constantExpression = /^(\d+)/;
 const operandExpression = /^([+*\/%^()-])/;
 
-const parseExpression = (expression) => {
+/**
+ * Represents a parsed set of dice roll inputs
+ */
+class DiceExpression {
+  /**
+   * Create a new DiceExpression, but you probably want .parse
+   * @constructs DiceExpression
+   * @param {string} original - the original string that was parsed into this DiceExpression
+   */
+  constructor(original){
+    /** @member {string} original - the original string parsed into this DiceExpression */
+    this.original = original;
+    /** @member {string[]} segments - the string segments of the mathematical expression parsed by this object */
+    this.segments = [];
+    /** @member {Value[]} values - the constant and dice roll values for this DiceExpression */
+    this.values = [];
+    /** @member {string} expression - the mathematical expression for this DiceExpression */
+    this.expression = '';
+    /** @member {Object} func - the expression compiled to a function */
+    this.func = {
+      eval: () => 0
+    };
+    /** @member {string} label - the specified label for the overall roll */
+    this.label = '';
+    /** @member {boolean} isValid - if this DiceExpression is valid */
+    this.isValid = true;
+    this.error = null;
+  }
 
-  const exp = new StringInspector(expression.trim());
-  console.log('parsing:', exp.remainder);
-  let match = [];
-  const mathExpression = [];
-  const values = [];
+  /**
+   * Add a value to the DiceExpression
+   * @param {Value} x 
+   */
+  addValue(x){
+    x.name = '$' + this.values.length;
+    this.values.push(x);
+    this.segments.push(x.name);
+  }
 
-  const addVariable = (definition) => {
-    definition.name = '$' + values.length;
-    mathExpression.push(definition.name);
-    values.push(definition);
-  };
+  /**
+   * Add an operator to the expression
+   * @param {string} x - the operator to add
+   */
+  addOperator(x){
+    this.segments.push(x);
+  }
 
-  while(exp.hasNext && match){
-    exp.nextWhile(x => whitespace.indexOf(x)>=0);
-
-    //check for dice rolls
-    match = exp.nextWith(rollExpression);
-    if(match){
-      addVariable({
-        type: 'roll',
-        dice: match[1] || '1',
-        faces: match[2],
-        options: match[3]
-      });
-      continue;
-    }
-
-    //check for constants
-    match = exp.nextWith(constantExpression);
-    if(match){
-      addVariable({
-        type: 'const',
-        value: parseInt(match[1], 10)
-      });
-      continue;
-    }
-
-    //check for operands
-    match = exp.nextWith(operandExpression);
-    if(match){
-      mathExpression.push(match[1]);
+  /**
+   * build and validate this DiceExpression
+   */
+  build(){
+    this.expression = this.segments.join(' ');
+    try{
+      this.func = math.compile(this.expression);
+    } catch(err){
+      this.isValid = false;
+      this.error = err;
     }
   }
 
-  console.log('Number of values:', values.length);
-  values.forEach((v, idx) => {
-    if(v.type==='const'){
-      console.log(`${v.name}: ${v.value}`);
-    } else if(v.type==='roll'){
-      console.log(`${v.name}: roll`);
-    } else {
-      console.log(`$${idx}: unknown`);
-    }
-  });
-  console.log('Compiled expression:', mathExpression.join(' '));
-  console.log('Leftovers:', exp.remainder);
-};
+  debug(){
+    console.log('Number of values:', this.values.length);
+    this.values.forEach((v, idx) => {
+      if(v instanceof DiceValue){
+        console.log(`${v.name}: roll`);
+      } else if(v instanceof Value){
+        console.log(`${v.name}: ${v.value}`);
+      } else {
+        console.log(`$${idx}: unknown`);
+      }
+    });
+    console.log('Compiled expression:', this.expression);
+  }
 
-parseExpression('d4+ 1d8 + (2 + 28d45k4 + -1) for great justice');
+  static parse(expression) {
+    const result = new DiceExpression(expression);
+    const exp = new StringInspector(expression.trim());
+    let match = [];
+  
+    while(exp.hasNext && match){
+      exp.skipWhitespace();
+  
+      //check for dice rolls
+      match = exp.nextWith(rollExpression);
+      if(match){
+        result.addValue(new DiceValue(match[1], match[2], match[3]));
+        continue;
+      }
+  
+      //check for constants
+      match = exp.nextWith(constantExpression);
+      if(match){
+        result.addValue(new Value(match[1]));
+        continue;
+      }
+  
+      //check for operands
+      match = exp.nextWith(operandExpression);
+      if(match){
+        result.addOperator(match[1]);
+      }
+    }
+  
+    const label = exp.remainder.trim();
+    if(label){
+      result.label = label;
+    }
+  
+    result.build();
+    result.debug();
+
+    return result;
+  }
+}
+
+
+let testExpression = DiceExpression.parse('d4+ 1d8 + (2 + 28d45k4 + -1) for great justice');
+
+module.exports = DiceExpression;

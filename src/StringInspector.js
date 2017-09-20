@@ -1,3 +1,5 @@
+const whitespace = ' \t\r\n';
+
 class StringInspector{
   /**
    * Create a new string inspector
@@ -74,6 +76,13 @@ class StringInspector{
       this.position += (result.index + result[0].length);
     }
     return result;
+  }
+
+  /**
+   * Skip all whitespace currently at the cursor
+   */
+  skipWhitespace(){
+    this.nextWhile(x => whitespace.indexOf(x) >= 0);
   }
 
   /**

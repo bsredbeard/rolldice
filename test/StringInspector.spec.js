@@ -72,4 +72,37 @@ describe('StringInspector', function(){
     expect(a.nextWhile(() => true)).to.equal('');
     expect(a.nextWhile(() => false)).to.equal('');
   });
+
+  it('should take take up to the matched regular expression', function(){
+    const a = new StringInspector('abcdefg');
+    expect(a.nextWith(/bcd/)[0]).to.equal('bcd');
+    expect(a.peek()).to.equal('e');
+  });
+
+  it('should not advance the cursor if the regular expression is not matched', function(){
+    const a = new StringInspector('abcdefg');
+    a.nextUntil(x => x === 'c');
+    expect(a.peek()).to.equal('c');
+    expect(a.nextWith(/bcde/)).to.be.null;
+    expect(a.peek()).to.equal('c');
+
+  });
+
+  it('should skip whitespace at the cursor', function(){
+    const a = new StringInspector('a b');
+    a.skipWhitespace();
+    expect(a.peek()).to.equal('a');
+    a.next();
+    expect(a.peek()).to.equal(' ');
+    a.skipWhitespace();
+    expect(a.peek()).to.equal('b');
+
+    const b = new StringInspector(' a');
+    b.skipWhitespace();
+    expect(b.peek()).to.equal('a');
+
+    const c = new StringInspector(' \t \r\n \n \r hi');
+    c.skipWhitespace();
+    expect(c.peek()).to.equal('h');
+  });
 });
