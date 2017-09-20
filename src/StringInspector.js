@@ -16,6 +16,10 @@ class StringInspector{
   get hasNext(){
     return this.position < this.str.length;
   }
+
+  get remainder(){
+    return this.str.slice(this.position).join('');
+  }
   /**
    * Get the next character
    * @returns {(string|boolean)} - returns the next character, or false if there is none
@@ -56,6 +60,20 @@ class StringInspector{
     } while(keepGoing);
     
     return results.join('');
+  }
+
+  /**
+   * Tries to match the expression starting at the current position and returns
+   * the match set if anything is found. Recommend using only ^ anchored expressions
+   * @param {RegExp} expression - the regex to find in the remaining string
+   * @returns {ArrayLike} - a regexp result, or null of nothing was found
+   */
+  nextWith(expression){
+    const result = expression.exec(this.str.slice(this.position).join(''));
+    if(result){
+      this.position += (result.index + result[0].length);
+    }
+    return result;
   }
 
   /**
