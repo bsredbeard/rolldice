@@ -24,8 +24,8 @@ class RawRoll{
    * @returns {string}
    */
   toString(){
-    const rr = this.rerolled ? '<reroll>' : '';
-    const dr = this.dropped ? '<drop>' : '';
+    const rr = this.rerolled ? '\u{1f503}' : '';
+    const dr = this.dropped ? '\u2716' : '';
     const ex = this.exploded ? '!' : '';
     return `${this.value}${ex}${dr}${rr}`;
   }

@@ -10,15 +10,18 @@ class Value{
   constructor(val) {
     /** @member {string} name - the arithmetic name of this value */
     this.name = '';
-    /** @member {boolean} isValid - if true, this value is a valid entry */
-    this.isValid = true;
+    /** @member {string} error - the error encountered while handling this value */
+    this.error = null;
     /** @member {value} number - the final value of this object */
     this.value = parseInt(val, 10);
     if(isNaN(this.value)){
       this.value = 0;
-      this.isValid = false;
+      this.error = `Specified value, ${val}, is not a number.`;
     }
   }
+
+  /** @member {boolean} isValid - if true, this value is a valid entry */
+  get isValid() { return this.error == null; }
 
   /**
    * Transfer this Value object's value onto the mathjs scope object

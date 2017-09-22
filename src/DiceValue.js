@@ -1,22 +1,65 @@
 const Value = require('./Value');
 const RollOptions = require('./RollOptions');
 const rollFunctions = require('./rollFunctions');
+const utils = require('./utils');
+
+const MAX_REROLL = 50;
+
+/**
+ * A function to process rolls
+ * @callback rollFunction
+ * @param {RollOptions} options - the options for this roll
+ * @returns {RawRoll}
+ */
 
 /**
  * Do all the necessary rolls for this roll group
  * @param {DiceValue} val 
- * @param {Function<RawRoll>} roller 
+ * @param {rollFunction} roller 
  */
 const doRolls = (val, roller) => {
   let rollCount = val.dice;
+  let rerollCount = 0;
   for(let idx = 0; idx < rollCount; idx++){
     const result = roller(val.options);
     val.details.push(result);
 
-    //if either reroll or explode, increment the total roll count
-    if(result.rerolled || result.exploded){
+    //if the roll explodes, increment the total roll count
+    if(result.exploded){
       rollCount++;
     }
+    //if the roll must be rerolled, increment rollcount and reroll count
+    if(result.rerolled){
+      if(rerollCount < MAX_REROLL){
+        rollCount++;
+        rerollCount++;
+      } else {
+        result.rerolled = false;
+      }
+    }
+  }
+
+  const validRolls = val.details.filter(x => !x.rerolled);
+
+  if(val.options.drop){
+    if(val.options.highestRolls){
+      //drop highest
+      val.value = utils.trimRolls(validRolls, 0, validRolls.length - val.options.drop);
+    } else {
+      //drop lowest
+      val.value = utils.trimRolls(validRolls, val.options.drop);
+    }
+  } else if(val.options.keep){
+    if(val.options.lowestRolls){
+      //keep lowest
+      val.value = utils.trimRolls(validRolls, 0, val.options.keep);
+    } else {
+      //keep highest
+      val.value = utils.trimRolls(validRolls, validRolls.length - val.options.keep);
+    }
+  } else {
+    //no drop/keep, sum all
+    val.value = utils.sumRolls(validRolls);
   }
 };
 
@@ -34,8 +77,8 @@ class DiceValue extends Value {
    */
   constructor(dice, faces, options){
     super('0');
-    /** @member {string} dice - the number of dice being rolled */
-    this.dice = dice || '1';
+    /** @member {number} dice - the number of dice being rolled */
+    this.dice = parseInt(dice || '1', 10);
     /** @member {(number|string)} faces - the type of dice being rolled */
     this.faces = faces;
     /** @member {RollOptions} options - the options for this dice roll */
@@ -43,21 +86,41 @@ class DiceValue extends Value {
     /** @member {RawRoll[]} details - the detailed results of the roll */
     this.details = [];
 
-    if(this.options.isValid){
-      const numFaces = parseInt(this.faces, 10);
-      if(isNaN(numFaces)){
-        if(!rollFunctions.hasOwnProperty(this.faces)){
-          this.isValid = false;
+    if(!this.dice || isNaN(this.dice) || this.dice < 1 || this.dice >= 1000){
+      this.error = 'Invalid number of dice';
+    } else {
+      if(utils.isNumeric(this.faces)){
+        this.faces = parseInt(this.faces);
+        if(this.faces < 2){
+          this.error = 'You must have at least 2 faces to roll dice';
         }
       } else {
-        this.faces = numFaces;
-        if(numFaces < 2){
-          this.isValid = false;
+        if(!rollFunctions.hasOwnProperty(this.faces)){
+          this.error = `Invalid dice type: ${this.faces}`;
         }
       }
     }
+
+
+    if(this.isValid){
+      if(this.options.isValid){
+        // ensure the options are valid for this dice roll
+        if(this.options.drop && this.options.drop >= this.dice){
+          this.error = `Cannot drop ${this.options.drop} dice when only ${this.dice} are being rolled.`;
+        }
+        if(this.options.keep && this.options.keep > this.dice){
+          this.error = `Cannot keep ${this.options.keep} dice when only ${this.dice} are being rolled.`;
+        }
+      } else {
+        this.error = `Invalid options: ${this.options}`;
+      }
+    }
+
   }
 
+  /**
+   * Perform the dice rolls for this roll
+   */
   roll(){
     if(this.isValid){
       if(typeof this.faces === 'string'){
@@ -89,7 +152,7 @@ class DiceValue extends Value {
     const detailsString = this.details
       .map(detail => detail.toString())
       .join(',');
-    return `${this.toString()} [${detailsString}]`;
+    return `(${this.notation}) [${detailsString}] = ${this.value}`;
   }
 }
 
