@@ -2,6 +2,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const RollOptions = require('../src/RollOptions');
+const StringInspector = require('../src/StringInspector');
 
 describe('RollOptions', function() {
   it('should accept an empty string', function(){
@@ -35,11 +36,11 @@ describe('RollOptions', function() {
     it('should have an error for invalid reroll strings', function(){
       const options1 = new RollOptions('r');
       expect(options1.isValid).to.be.false;
-      expect(options1.error).to.equal('Must specify options for the (r)eroll modifier, e.g. r3, r<3, or r>=11');
+      expect(options1.error).to.equal('You must specify valid options for the (r)eroll modifier, e.g. r1, r<5, r>=10');
   
       const options2 = new RollOptions('ra');
       expect(options2.isValid).to.be.false;
-      expect(options2.error).to.equal('Invalid (r)eroll options: a');
+      expect(options2.error).to.equal('You must specify valid options for the (r)eroll modifier, e.g. r1, r<5, r>=10');
     });
   
     it('should accept a valid simple reroll', function(){
@@ -127,13 +128,13 @@ describe('RollOptions', function() {
     it('should have an error if no drop options are specified', function(){
       const options = new  RollOptions('d');
       expect(options.isValid).to.be.false;
-      expect(options.error).to.equal('Must specify options for the (d)rop modifier, e.g. d3 or dh1');
+      expect(options.error).to.equal('You must specify valid options for the (d)rop modifier, e.g. d3, dl2, dh3');
     });
 
     it('should have an error if drop options are invalid', function(){
       const options = new RollOptions('dxxx');
       expect(options.isValid).to.be.false;
-      expect(options.error).to.equal('Invalid (d)rop options: xxx');
+      expect(options.error).to.equal('You must specify valid options for the (d)rop modifier, e.g. d3, dl2, dh3');
     });
 
     it('should default to dropping lowest dice', function(){
@@ -172,13 +173,13 @@ describe('RollOptions', function() {
     it('should have an error if no keep options are specified', function(){
       const options = new  RollOptions('k');
       expect(options.isValid).to.be.false;
-      expect(options.error).to.equal('Must specify options for the (k)eep modifier, e.g. k3 or kl1');
+      expect(options.error).to.equal('You must specify valid options for the (k)eep modifier, e.g. k3, kl2, kh2');
     });
 
     it('should have an error if keep options are invalid', function(){
       const options = new RollOptions('kxxx');
       expect(options.isValid).to.be.false;
-      expect(options.error).to.equal('Invalid (k)eep options: xxx');
+      expect(options.error).to.equal('You must specify valid options for the (k)eep modifier, e.g. k3, kl2, kh2');
     });
 
     it('should default to keepping lowest dice', function(){
@@ -230,6 +231,28 @@ describe('RollOptions', function() {
     const options2 = new RollOptions('d1k1');
     expect(options2.isValid).to.be.false;
     expect(options2.error).to.equal('Cannot enable both "keep" and "drop" options simultaneously.');
+  });
+
+  it('should recognize and return valid roll options in a string inspector', function(){
+    [
+      { option: 'd5', position: 0, expected: 'd5', next: false },
+      { option: 'k5', position: 0, expected: 'k5', next: false },
+      { option: '!', position: 0, expected: '!', next: false },
+      { option: 'r1', position: 0, expected: 'r1', next: false },
+      { option: 'r<10', position: 0, expected: 'r<10', next: false },
+      { option: 'r>=100', position: 0, expected: 'r>=100', next: false },
+      { option: 'r1! ', position: 0, expected: 'r1!', next: ' '},
+      { option: 'blah', position: 0, expected: '', next: 'b' },
+      { option: ' k5r1!', position: 0, expected: '', next: ' '},
+      { option: ' k5r1!+', position: 1, expected: 'k5r1!', next: '+'}
+    ].forEach(x => {
+      const inspector = new StringInspector(x.option);
+      if(x.position){
+        inspector.position = x.position;
+      }
+      expect(RollOptions.findOptions(inspector)).to.equal(x.expected);
+      expect(inspector.next()).to.equal(x.next);
+    });
   });
 
 });

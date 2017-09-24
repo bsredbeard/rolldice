@@ -4,6 +4,7 @@ const rollFunctions = require('./rollFunctions');
 const utils = require('./utils');
 
 const MAX_REROLL = 50;
+const basicRollPattern = /^(\d*)[dD](\d+|f)/;
 
 /**
  * A function to process rolls
@@ -153,6 +154,24 @@ class DiceValue extends Value {
       .map(detail => detail.toString())
       .join(',');
     return `(${this.notation}) [${detailsString}] = ${this.value}`;
+  }
+
+  /**
+   * Try to find a dice roll in the provided StringInspector
+   * @param {StringInspector} inspector 
+   * @returns {DiceValue} or null of no roll was found
+   */
+  static findDiceRoll(inspector){
+    const maybe = inspector.peek(10);
+    if(basicRollPattern.test(maybe)){
+      const match = inspector.nextWith(basicRollPattern);
+      const numDice = match[1] || '1';
+      const faces = match[2];
+      const options = RollOptions.findOptions(inspector);
+      return new DiceValue(numDice, faces, options);
+    } else {
+      return null;
+    }
   }
 }
 

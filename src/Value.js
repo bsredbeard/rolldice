@@ -23,6 +23,8 @@ class Value{
   /** @member {boolean} isValid - if true, this value is a valid entry */
   get isValid() { return this.error == null; }
 
+  get notation() { return '' + this.value; }
+
   /**
    * Transfer this Value object's value onto the mathjs scope object
    * @param {*} target - an object with keys for each dice value upon which to set this object's value
@@ -30,6 +32,7 @@ class Value{
    */
   transfer(target){
     if(!target) target = {};
+    if(!this.name) throw new Error('Value\'s name property must be set to transfer a value.');
     target[this.name] = this.value;
     return target;
   }
@@ -39,7 +42,11 @@ class Value{
    * @returns {string}
    */
   toString(){
-    return '' + this.value;
+    return this.notation;
+  }
+
+  toDetails(){
+    return '(constant) ' + this.value;
   }
 }
 

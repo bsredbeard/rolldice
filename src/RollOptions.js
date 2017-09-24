@@ -15,11 +15,11 @@ const props = Object.freeze({
 // the characters that denote the start of a roll option
 const commandCharacters = '!kdr';
 // the regex that can parse a keep or drop command argument
-const keepDropArguments = /^([hl]?)([0-9]+)$/i;
+const keepDropArguments = /^([hl]?)([0-9]+)/i;
 // the regex that can parse a reroll argument
-const rerollArguments = /([<>]?=?)(\d+)/;
+const rerollArguments = /^([<>]?=?)(\d+)/;
 
-const takeUntilNextCommand = c => commandCharacters.indexOf(c) >= 0;
+const isCommandChar = c => c && commandCharacters.indexOf(c) >= 0;
 
 const simpleReroll = match => {
   return num => num === match;
@@ -50,9 +50,9 @@ const comparisonReroll = (match, operator, orEquals) => {
  */
 const parseOptions = (ro, options) => {
   while(ro[props.isValid] && options.hasNext){
-    const discard = options.nextUntil(takeUntilNextCommand);
-    if(discard){
-      console.log('discarding options:', discard);
+    const discard = options.nextUntil(isCommandChar);
+    if(discard.trim()){
+      throw new Error('Discarded information found in RollOptions: ' + discard);
     }
     const cmd = options.next();
     if(cmd !== false){
@@ -61,85 +61,67 @@ const parseOptions = (ro, options) => {
           ro[props.explodingRolls] = true;
           break;
         case 'k':
-          const keepOptions = options.nextUntil(takeUntilNextCommand);
-          if(keepOptions){
-            const args = keepDropArguments.exec(keepOptions);
-            if(args){
-              if(ro[props.drop]){
-                ro[props.isValid] = false;
-                ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
-              } else {
-                if(args[1] === 'l' || args[1] === 'L'){
-                  ro[props.lowestRolls] = true;
-                  ro[props.highestRolls] = false;
-                } else {
-                  ro[props.highestRolls] = true;
-                  ro[props.lowestRolls] = false;
-                }
-                ro[props.keep] = parseInt(args[2], 10);
-              }
-            } else {
+          const keepArgs = options.nextWith(keepDropArguments);
+          if(keepArgs){
+            if(ro[props.drop]){
               ro[props.isValid] = false;
-              ro[props.error] = `Invalid (k)eep options: ${keepOptions}`;
+              ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
+            } else {
+              if(keepArgs[1] === 'l' || keepArgs[1] === 'L'){
+                ro[props.lowestRolls] = true;
+                ro[props.highestRolls] = false;
+              } else {
+                ro[props.highestRolls] = true;
+                ro[props.lowestRolls] = false;
+              }
+              ro[props.keep] = parseInt(keepArgs[2], 10);
             }
           } else {
             ro[props.isValid] = false;
-            ro[props.error] = 'Must specify options for the (k)eep modifier, e.g. k3 or kl1';
+            ro[props.error] = 'You must specify valid options for the (k)eep modifier, e.g. k3, kl2, kh2';
           }
           break;
         case 'd':
-          const dropOptions = options.nextUntil(takeUntilNextCommand);
-          if(dropOptions){
-            const args = keepDropArguments.exec(dropOptions);
-            if(args){
-              if(ro[props.keep]){
-                ro[props.isValid] = false;
-                ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
-              } else {
-                if(args[1] === 'h' || args[1] === 'h'){
-                  ro[props.highestRolls] = true;
-                  ro[props.lowestRolls] = false;
-                } else {
-                  ro[props.lowestRolls] = true;
-                  ro[props.highestRolls] = false;
-                }
-                ro[props.drop] = parseInt(args[2], 10);
-              }
-            } else {
+          const dropArgs = options.nextWith(keepDropArguments);
+          if(dropArgs){
+            if(ro[props.keep]){
               ro[props.isValid] = false;
-              ro[props.error] = `Invalid (d)rop options: ${dropOptions}`;
+              ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
+            } else {
+              if(dropArgs[1] === 'h' || dropArgs[1] === 'H'){
+                ro[props.highestRolls] = true;
+                ro[props.lowestRolls] = false;
+              } else {
+                ro[props.lowestRolls] = true;
+                ro[props.highestRolls] = false;
+              }
+              ro[props.drop] = parseInt(dropArgs[2], 10);
             }
           } else {
             ro[props.isValid] = false;
-            ro[props.error] = 'Must specify options for the (d)rop modifier, e.g. d3 or dh1';
+            ro[props.error] = 'You must specify valid options for the (d)rop modifier, e.g. d3, dl2, dh3';
           }
           break;
         case 'r':
-          const rerollOptions = options.nextUntil(takeUntilNextCommand);
-          if(rerollOptions){
-            const args = rerollArguments.exec(rerollOptions);
-            if(args){
-              const target = parseInt(args[2], 10);
-              if(isNaN(target)){
-                ro[props.isValid] = false;
-                ro[props.error] = 'You must supply a number for reroll options';
-              } else {
-                if(args[1].length){
-                  const operator = args[1][0];
-                  const orEquals = args[1].length > 1;
-                  ro.reroll.push(comparisonReroll(target, operator, orEquals));
-                } else {
-                  //simple match reroll
-                  ro.reroll.push(simpleReroll(target));
-                }
-              }
-            } else {
+          const rerollArgs = options.nextWith(rerollArguments);
+          if(rerollArgs){
+            const target = parseInt(rerollArgs[2], 10);
+            if(isNaN(target)){
               ro[props.isValid] = false;
-              ro[props.error] = `Invalid (r)eroll options: ${rerollOptions}`;
+              ro[props.error] = 'You must supply a number for reroll options';
+            } else {
+              if(rerollArgs[1].length){
+                const operator = rerollArgs[1][0];
+                const orEquals = rerollArgs[1].length > 1;
+                ro.reroll.push(comparisonReroll(target, operator, orEquals));
+              } else {
+                //simple match reroll
+                ro.reroll.push(simpleReroll(target));
+              }
             }
           } else {
             ro[props.isValid] = false;
-            ro[props.error] = 'Must specify options for the (r)eroll modifier, e.g. r3, r<3, or r>=11';
+            ro[props.error] = 'You must specify valid options for the (r)eroll modifier, e.g. r1, r<5, r>=10';
           }
           break;
       }
@@ -201,6 +183,35 @@ class RollOptions {
 
   toString(){
     return this[props.original];
+  }
+
+  /**
+   * Try to get all possible options from a string inspector
+   * @param {StringInspector} parser 
+   * @returns {string} the resulting options string
+   */
+  static findOptions(parser) {
+    const options = [];
+    while(isCommandChar(parser.peek())){
+      const letter = parser.next();
+      options.push(letter);
+      switch(letter){
+        case 'k':
+        case 'd':
+          const kdArgs = parser.nextWith(keepDropArguments);
+          if(kdArgs){
+            options.push(kdArgs[0]);
+          }
+          break;
+        case 'r':
+          const rArgs = parser.nextWith(rerollArguments);
+          if(rArgs){
+            options.push(rArgs[0]);
+          }
+          break;
+      }
+    }
+    return options.join('');
   }
 }
 
