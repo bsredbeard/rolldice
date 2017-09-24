@@ -1,14 +1,13 @@
-const roller = require('./roller');
+const math = require('mathjs');
 const RawRoll = require('../RawRoll');
 
 const ROLL_RANGE = [-1, 0, 1];
 
 const fudgeRoll = () => {
   return (options) => {
-    const rollResult = roller(ROLL_RANGE.length)
-    const mappedResult = ROLL_RANGE[rollResult - 1];
-    const reroll = options.needReroll(mappedResult);
-    return new RawRoll(mappedResult, reroll);
+    const roll = math.pickRandom(ROLL_RANGE);
+    const reroll = options.needReroll(roll);
+    return new RawRoll(roll, reroll);
   }
 };
 

@@ -1,166 +1,187 @@
-var DiceRoll = require('./DiceRoll');
-var DiceOperator = require('./DiceOperator');
-var DiceConstant = require('./DiceConstant');
-var specialFunctions = require('./SpecialFunctions');
+const math = require('mathjs');
+
+const StringInspector = require('./StringInspector');
+const Value = require('./Value');
+const DiceValue = require('./DiceValue');
+
+const constantExpression = /^(\d+)/;
+const operandExpression = /^([+*/%^()-])/;
 
 /**
- * Checks the parsed operations of a dice expression for validity
- * @returns {boolean} true if the expression is valid
+ * Parse a DiceExpression's original expression string
+ * @param {DiceExpression} result 
  */
-function validate(){
-  var isValid = false;
-  if(this.operations && this.operations.length){
-    
-    var hasRolls = false;
-    var operationsValid = this.operations.reduce(function(agg, op){
-      if(op instanceof DiceRoll){
-        hasRolls = true;
-      }
-      return agg && op.isValid;
-    }, true);
-    var validStart = false;
-    var validEnd = false;
-    
-    if(hasRolls){
-      validStart = !(this.operations[0] instanceof DiceOperator);
-      validEnd = !(this.operations[this.operations.length-1] instanceof DiceOperator);
+const parse = (subject) => {
+  const exp = new StringInspector(subject.original.trim());
+  let match = [];
+
+  while(exp.hasNext && match){
+    exp.skipWhitespace();
+
+    //check for dice rolls
+    const roll = DiceValue.findDiceRoll(exp);
+    if(roll){
+      subject.addValue(roll);
+      continue;
     }
 
-    isValid = hasRolls && operationsValid && validStart && validEnd;
-    
+    //check for constants
+    match = exp.nextWith(constantExpression);
+    if(match){
+      subject.addValue(new Value(match[1]));
+      continue;
+    }
+
+    //check for operands
+    match = exp.nextWith(operandExpression);
+    if(match){
+      subject.addOperator(match[1]);
+    }
   }
-  return isValid;
-}
+
+  const label = exp.remainder.trim();
+  if(label){
+    subject.label = label;
+  }
+};
+
 
 /**
- * Executes the operations of a DiceExpression
+ * Represents a parsed set of dice roll inputs
  */
-function execute(){
-  if(this.isValid){
-    var currentTotal = 0;
-    var operatorBuffer = null;
-    for(var opIndex in this.operations){
-      var operation = this.operations[opIndex];
-      if(operation instanceof DiceRoll){
-        operation.execute();
-      }
-      if(operation instanceof DiceOperator){
-        if(operatorBuffer === null){
-          operatorBuffer = operation;
-        } else {
-          throw new Error('Pre-existing operator');
-        }
-      } else {
-        if(operatorBuffer){
-          currentTotal = operatorBuffer.delegate(currentTotal, operation.results.total);
-          operatorBuffer = null;
-        } else {
-          currentTotal = operation.results.total;
-        }
-      }
-    }
-    //store the results in a way they can be exposed
-    this.result = currentTotal;
-    this.details = this.operations.reduce(function(descr, op){
-      return descr + op.toString();
-    }, '');
-  }
-}
+class DiceExpression {
+  /**
+   * Create a new DiceExpression, but you probably want .parse
+   * @constructs DiceExpression
+   * @param {string} original - the original string that will be parsed and prepared for execution.
+   */
+  constructor(original){
+    /** @member {string} original - the original string parsed into this DiceExpression */
+    this.original = original;
+    /** @member {string[]} segments - the string segments of the mathematical expression parsed by this object */
+    this.segments = [];
+    /** @member {Value[]} values - the constant and dice roll values for this DiceExpression */
+    this.values = [];
+    /** @member {string} expression - the mathematical expression for this DiceExpression */
+    this.expression = '';
+    /** @member {string} notation - the expression with placeholders replaced by notation values */
+    this.notation = '';
+    /** @member {string} label - the specified label for the overall roll */
+    this.label = '';
+    /** @member {string} error - the error invalidating the dice expression */
+    this.error = null;
 
-function toString(){
-  if(this.special){
-    return this.special;
-  } else {
+    parse(this);
+  }
+
+  /** @member {boolean} isValid - if true, the expression is valid */
+  get isValid() { return this.error == null; }
+
+  /**
+   * Add a value to the DiceExpression
+   * @param {Value} x 
+   */
+  addValue(x){
+    x.name = '$' + this.values.length;
+    this.values.push(x);
+    this.segments.push(x.name);
+  }
+
+  /**
+   * Add an operator to the expression
+   * @param {string} x - the operator to add
+   */
+  addOperator(x){
+    this.segments.push(x);
+  }
+
+  /**
+   * Update the notation field with a value's notation
+   * @param {Value} value 
+   */
+  updateNotation(value) {
+    this.notation = this.notation.replace(value.name, value.notation);
+  }
+
+  /**
+   * build and execute this DiceExpression
+   */
+  execute(){
     if(this.isValid){
-      return (this.label ? this.label + ': ' : '') + this.result + ' rolls: ' + this.details;
-    } else {
-      return 'invalid dice roll';
-    }
-  }
-}
+      this.expression = this.segments.join(' ');
+      this.notation = this.expression;
+      try{
+        const func = math.compile(this.expression);
 
-/**
- * Creates a new dice expression from an input string
- * @class {DiceExpression}
- * @param {string} expr - the dice notation expression to parse
- * @example
- * let exp = new DiceExpression('2d6 + 3');
- * console.log(exp.toString());
- */
-function DiceExpression(expr){
-  var operations = [];
-  var diceNotation = /^\s*([+-])?\s*(\d*)d(\d+|f)([^\s+-]*)/i;
-  
-  var special = specialFunctions.getSpecial(expr);
-  if(special){
-    this.special = special;
-  } else {
-    var srcString = expr;
-    while(srcString){
-      var match = diceNotation.exec(srcString);
-      if(match){
-        var operator = match[1];
-        var numDice = match[2];
-        var numFaces = match[3];
-        var options = match[4];
-        
-        if(operator){
-          operations.push(new DiceOperator(operator));
+        if(this.values.every(x => x.isValid)){
+          const scope = {};
+          this.values.forEach(val => {
+            if(val instanceof DiceValue){
+              val.roll();
+            }
+            val.transfer(scope);
+            this.updateNotation(val);
+          });
+          this.result = func.eval(scope);
+        } else {
+          const valueErrors = this.values.filter(x => !x.isValid)
+            .join('\r\n');
+          this.error = `Invalid values:\r\n${valueErrors}`;
         }
-        if(numFaces){
-          operations.push(new DiceRoll(numDice, numFaces, options));
-        }
-        //consume a bit of the string
-        srcString = srcString.length > match[0].length ? srcString.substr(match[0].length) : null;
-      } else {
-        var tailExpression = /\s*([+-])\s*([0-9]+)/i;
-        match = tailExpression.exec(srcString);
-        if(match){
-          var operator = match[1];
-          var cval = match[2];
-          if(operator){
-            operations.push(new DiceOperator(operator));
-          }
-          if(cval){
-            operations.push(new DiceConstant(cval));
-          }
-        }
-        
-        var labelExpression = /for\s+(.*)/;
-        match = labelExpression.exec(srcString);
-        if(match){
-          this.label = match[1];
-        }
-        
-        //make sure the loop can exit after looking for constants
-        srcString = null;
+      } catch(err){
+        this.error = err;
       }
     }
   }
-  /**
-   * @member {DiceOperator[]} operations - the operations built up from the epxression string
-   */
-  this.operations = operations;
-  /**
-   * @member {Function} toString - gets a formatted string notation of the results
-   */
-  this.toString = toString.bind(this);
-  /**
-   * @member {boolean} isValid - indicates if this DiceExpression was constructed from a valid string
-   */
-  this.isValid = validate.apply(this);
 
-  if(this.isValid){
-    execute.apply(this);
+  toString(){
+    if(!this.isValid){
+      return this.error;
+    }
+    return `Total: ${this.result}`;
   }
 
-  /**
-   * @member {number} result - if set, the result of the roll
-   */
+  toDetails(){
+    if(!this.isValid){
+      return this.error;
+    }
+    const lines = [];
+    lines.push(`Total: ${this.result}`);
+    lines.push(`Formula: ${this.notation}`);
+    lines.push('Rolls:');
+    this.values.forEach(v => {
+      if(v instanceof DiceValue){
+        lines.push(v.toDetails());
+      }
+    });
+    return lines.join('\r\n');
+  }
 
-  /**
-  * @member {string} details - if set, the detailed rolls of a given expression
-  */
+  debug(){
+    /* eslint-disable no-console */
+    console.log('Input:', this.original);
+    console.log('isValid:', this.isValid, this.error);
+    console.log('expression:', this.expression);
+    console.log('----------------------');
+    console.log('Result:', this.result);
+    console.log('notation:', this.notation);
+    console.log('Number of values:', this.values.length);
+    this.values.forEach((v, idx) => {
+      if(v instanceof DiceValue){
+        console.log(v.toDetails());
+      } else if(v instanceof Value){
+        //
+      } else {
+        console.log(`$${idx}: unknown`);
+      }
+    });
+    /* eslint-enable no-console */
+  }
 }
+
+
+let testExpression = new DiceExpression('d4+ 1d8 + (2 + 28d45k4r<10 + -1) for great justice');
+testExpression.execute();
+testExpression.debug();
 
 module.exports = DiceExpression;

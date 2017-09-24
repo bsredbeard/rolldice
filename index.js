@@ -1,3 +1,3 @@
-var DiceExpression = require('./src/DiceExpression');
+const DiceRoll = require('./src/');
 
-module.exports = DiceExpression;
+module.exports = DiceRoll;

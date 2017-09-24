@@ -42,7 +42,7 @@ const trimRolls = (rolls, start, end) => {
   return sumRolls(rolls.slice(start, end));
 }
 
-const numericTest = /[0-9\.]/;
+const numericTest = /[0-9.]/;
 const isNumeric = (str) => {
   return numericTest.test(str);
 };
