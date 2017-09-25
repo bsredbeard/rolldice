@@ -70,8 +70,14 @@ class DiceExpression {
     this.label = '';
     /** @member {string} error - the error invalidating the dice expression */
     this.error = null;
+    /** @member {number} result - the total of the dice rolls */
+    this.result = 0;
 
     parse(this);
+
+    if(this.values.length < 1){
+      this.error = 'Invalid roll: No dice to roll. Try help';
+    }
   }
 
   /** @member {boolean} isValid - if true, the expression is valid */
@@ -156,32 +162,6 @@ class DiceExpression {
     });
     return lines.join('\r\n');
   }
-
-  debug(){
-    /* eslint-disable no-console */
-    console.log('Input:', this.original);
-    console.log('isValid:', this.isValid, this.error);
-    console.log('expression:', this.expression);
-    console.log('----------------------');
-    console.log('Result:', this.result);
-    console.log('notation:', this.notation);
-    console.log('Number of values:', this.values.length);
-    this.values.forEach((v, idx) => {
-      if(v instanceof DiceValue){
-        console.log(v.toDetails());
-      } else if(v instanceof Value){
-        //
-      } else {
-        console.log(`$${idx}: unknown`);
-      }
-    });
-    /* eslint-enable no-console */
-  }
 }
-
-
-let testExpression = new DiceExpression('d4+ 1d8 + (2 + 28d45k4r<10 + -1) for great justice');
-testExpression.execute();
-testExpression.debug();
 
 module.exports = DiceExpression;

@@ -6,7 +6,7 @@
     "roll",
     "dice"
   ],
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/mentalspike/rolldice.git"
@@ -17,9 +17,9 @@
   "author": "mentalspike",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "^4.7.0",
-    "mocha": "^2.4.5"
+    "chai": "^4.1.2",
+    "eslint": "^4.7.2",
+    "mocha": "^3.5.3"
   },
   "dependencies": {
     "mathjs": "^3.16.3"
