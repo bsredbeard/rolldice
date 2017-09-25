@@ -1,5 +1,5 @@
-const math = require('mathjs');
-const RawRoll = require('../RawRoll');
+import * as math from 'mathjs';
+import RawRoll from '../RawRoll';
 
 const defaultRoll = (numFaces) => {
   return (options) => {
@@ -10,4 +10,6 @@ const defaultRoll = (numFaces) => {
   }
 };
 
-module.exports = defaultRoll;
+export default defaultRoll;
+
+// module.exports = defaultRoll;

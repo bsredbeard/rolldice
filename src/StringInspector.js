@@ -1,6 +1,6 @@
 const whitespace = ' \t\r\n';
 
-class StringInspector{
+export default class StringInspector{
   /**
    * Create a new string inspector
    * @param {string} str - the input string
@@ -100,5 +100,3 @@ class StringInspector{
     return this.str.join('');
   }
 }
-
-module.exports = StringInspector;

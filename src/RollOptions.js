@@ -1,4 +1,4 @@
-const StringInspector = require('./StringInspector');
+import StringInspector from './StringInspector';
 
 const props = Object.freeze({
   original: Symbol('property:original'),
@@ -132,7 +132,7 @@ const parseOptions = (ro, options) => {
 /**
  * An object to parse and represent the options for a particular roll
  */
-class RollOptions {
+export default class RollOptions {
   /**
    * Create a new set of roll options
    * @param {string} options 
@@ -214,5 +214,3 @@ class RollOptions {
     return options.join('');
   }
 }
-
-module.exports = RollOptions;

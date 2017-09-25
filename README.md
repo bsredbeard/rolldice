@@ -17,16 +17,16 @@ const RollDice = require('rolldice');
 let dice = new RollDice('d4 + 2d12 + 3d3 for great justice');
 
 // get the boolean value of the expression's validity check
-let syntaxIsValid = dice.isValid;
+let syntaxIsValid = dice.expression.isValid;
 // > true
 
 // get the numerical value of the expression
-let rollTotal = dice.result;
-// > 18
+let rollTotal = dice.expression.result;
+// > 27
 
 // get a string description of each roll result within the specified expression
-let rollDetails = dice.details;
-// > '1d4(2=2) + 2d12(11=8+3) + 3d3(5=2+1+2)'
+let rollDetails = dice.expression.toDetails();
+// > 'Total: 27\r\nFormula: 1d4 + 2d12 + 3d3\r\nRolls:\r\n(1d4) [4] = 4\r\n(2d12) [6,11] = 17\r\n(3d3) [1,3,2] = 6'
 
 // get a string representation of the roll total and roll details
 console.log('For', dice.toString());

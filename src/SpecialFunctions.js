@@ -42,4 +42,4 @@ class SpecialFunctions{
   }
 }
 
-module.exports = new SpecialFunctions();
+export default new SpecialFunctions();

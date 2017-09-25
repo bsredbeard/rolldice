@@ -1,8 +1,6 @@
-/* global describe, it */
-const chai = require('chai');
-const expect = chai.expect;
-const DiceValue = require('../src/DiceValue');
-const StringInspector = require('../src/StringInspector');
+import { expect } from 'chai';
+import DiceValue from '../src/DiceValue';
+import StringInspector from '../src/StringInspector';
 
 describe('DiceValue', function(){
   it('should have an initial value of 0', function(){

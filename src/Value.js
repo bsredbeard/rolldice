@@ -1,7 +1,7 @@
 /**
  * A value that can be used to export values to the math scope object
  */
-class Value{
+export default class Value{
   /**
    * Create a new value object
    * @constructs Value
@@ -49,5 +49,3 @@ class Value{
     return '(constant) ' + this.value;
   }
 }
-
-module.exports = Value;

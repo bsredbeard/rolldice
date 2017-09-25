@@ -2,7 +2,7 @@
  * Represents a singlar dice roll
  * @class
  */
-class RawRoll{
+export default class RawRoll{
   /**
    * Create a new raw roll
    * @constructs RawRoll
@@ -30,5 +30,3 @@ class RawRoll{
     return `${this.value}${ex}${dr}${rr}`;
   }
 }
-
-module.exports = RawRoll;

@@ -1,8 +1,8 @@
-const math = require('mathjs');
+import * as math from 'mathjs';
 
-const StringInspector = require('./StringInspector');
-const Value = require('./Value');
-const DiceValue = require('./DiceValue');
+import StringInspector from './StringInspector';
+import Value from './Value';
+import DiceValue from './DiceValue';
 
 const constantExpression = /^(\d+)/;
 const operandExpression = /^([+*/%^()-])/;
@@ -49,7 +49,7 @@ const parse = (subject) => {
 /**
  * Represents a parsed set of dice roll inputs
  */
-class DiceExpression {
+export default class DiceExpression {
   /**
    * Create a new DiceExpression, but you probably want .parse
    * @constructs DiceExpression
@@ -163,5 +163,3 @@ class DiceExpression {
     return lines.join('\r\n');
   }
 }
-
-module.exports = DiceExpression;

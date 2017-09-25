@@ -1,8 +1,6 @@
-/* global describe, it */
-const chai = require('chai');
-const expect = chai.expect;
-const RollOptions = require('../src/RollOptions');
-const StringInspector = require('../src/StringInspector');
+import { expect } from 'chai';
+import RollOptions from '../src/RollOptions';
+import StringInspector from '../src/StringInspector';
 
 describe('RollOptions', function() {
   it('should accept an empty string', function(){

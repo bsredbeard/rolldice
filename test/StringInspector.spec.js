@@ -1,7 +1,5 @@
-/* global describe, it */
-const chai = require('chai');
-const expect = chai.expect;
-const StringInspector = require('../src/StringInspector');
+import { expect } from 'chai';
+import StringInspector from '../src/StringInspector';
 
 describe('StringInspector', function(){
   it('should accept no input and have 0 length', function(){

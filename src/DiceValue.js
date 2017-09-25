@@ -1,7 +1,7 @@
-const Value = require('./Value');
-const RollOptions = require('./RollOptions');
-const rollFunctions = require('./rollFunctions');
-const utils = require('./utils');
+import Value from './Value';
+import RollOptions from './RollOptions';
+import rollFunctions from './rollFunctions';
+import * as utils from './utils';
 
 const MAX_REROLL = 50;
 const basicRollPattern = /^(\d*)[dD](\d+|f)/;
@@ -68,7 +68,7 @@ const doRolls = (val, roller) => {
  * A value that represents a dice roll
  * @extends Value
  */
-class DiceValue extends Value {
+export default class DiceValue extends Value {
   /**
    * Create a new dice roll value
    * @constructs DiceValue
@@ -174,5 +174,3 @@ class DiceValue extends Value {
     }
   }
 }
-
-module.exports = DiceValue;

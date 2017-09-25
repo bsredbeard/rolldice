@@ -1,6 +1,5 @@
-var chai = require('chai');
-var expect = chai.expect;
-var Dice = require('../src');
+import { expect } from 'chai';
+import Dice from '../src';
 
 describe('DiceRoll', function(){
   it('should not attempt an invalid roll', function(){
@@ -11,7 +10,7 @@ describe('DiceRoll', function(){
   
   it('should respond to valid complex rolls', function(){
     const roll = new Dice('4d6k2 + 3d10-8', { detailed: true });
-    expect(roll.expression.isValid).to.equal(true);
+    expect(roll.expression.isValid, roll.expression.error).to.equal(true);
     expect(roll.expression.result).to.be.greaterThan(0);
 
     const lines = roll.toString().split('\r\n');

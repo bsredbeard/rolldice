@@ -1,7 +1,5 @@
-/* global describe, it */
-const chai = require('chai');
-const expect = chai.expect;
-const Value = require('../src/Value');
+import {expect} from 'chai';
+import Value from '../src/Value';
 
 describe('Value', function(){
   it('should be invalid if passed non-numeric string', function(){

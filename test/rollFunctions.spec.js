@@ -1,8 +1,6 @@
-/* global describe, it */
-const chai = require('chai');
-const expect = chai.expect;
-const rollFunctions = require('../src/rollFunctions');
-const RollOptions = require('../src/RollOptions');
+import { expect } from 'chai';
+import rollFunctions from '../src/rollFunctions';
+import RollOptions from '../src/RollOptions';
 
 describe('rollFunctions', function(){
   describe('~default', function(){

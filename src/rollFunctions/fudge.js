@@ -1,5 +1,5 @@
-const math = require('mathjs');
-const RawRoll = require('../RawRoll');
+import * as math from 'mathjs';
+import RawRoll from '../RawRoll';
 
 const ROLL_RANGE = [-1, 0, 1];
 
@@ -11,4 +11,5 @@ const fudgeRoll = () => {
   }
 };
 
-module.exports = fudgeRoll;
+export default fudgeRoll;
+// module.exports = fudgeRoll;

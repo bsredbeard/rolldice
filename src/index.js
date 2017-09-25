@@ -1,5 +1,5 @@
-const DiceExpression = require('./DiceExpression');
-const SpecialFunctions = require('./SpecialFunctions');
+import DiceExpression from './DiceExpression';
+import SpecialFunctions from './SpecialFunctions';
 
 const inputProperty = Symbol('DiceRoll.input');
 const resultProperty = Symbol('DiceRoll.result');
@@ -8,7 +8,7 @@ const expressionProperty = Symbol('DiceRoll.expression');
 /**
  * A DiceRoll request
  */
-class DiceRoll {
+export default class DiceRoll {
   /**
    * Create a new DiceRoll
    * @param {string} input - the request string 
@@ -59,5 +59,3 @@ class DiceRoll {
     return this.result;
   }
 }
-
-module.exports = DiceRoll;
