@@ -33,6 +33,16 @@
       .dice-form{
         flex-shrink:0;
       }
+      #dice_form > div{
+        display:flex;
+      }
+      button[type="submit"]{
+        display:inline-block;
+        margin-left: 1em;
+      }
+      #dice_command{
+        flex-grow:2;
+      }
       #dice_output{
         overflow:auto;
         flex-grow:2;
@@ -46,7 +56,11 @@
         <p>
           This script allows you to easily parse and report dice rolls and equations written with dice notation.
           The syntax of this dice rolling script is closest to that of roll20, however it is a much simplified
-          version of their full set of functionality.
+          version of their full set of functionality. 
+        </p>
+        <p>
+            You can install it via npm with <code>npm install rolldice --save</code> or
+            <a href="https://github.com/mentalspike/rolldice">check out the github repository</a>.
         </p>
         <p>
           Feel free to explore the rolling syntax and functionality using this page. Enter "help" as
@@ -56,16 +70,16 @@
       <div class="dice-area">
         <div class="dice-form">
           <form id="dice_form">
-            <input type="text" id="dice_command" value="2d6 + 4d8 - 3 * d10 + (4d20!k1 % 5) for a very silly roll example" placeholder="roll expression" />
-            <input type="checkbox" id="dice_detailed" checked />&nbsp;Detailed output?
-            <button type="submit">Roll</button>
+            <div>
+              <input type="text" id="dice_command" value="2d6 + 4d8 - 3 * d10 + (4d20!k1 % 5) for a very silly roll example" placeholder="roll expression" />
+              <label><input type="checkbox" id="dice_detailed" checked />&nbsp;Detailed output?</label>
+              <button type="submit">Roll</button>
+            </div>
           </form>
         </div>
         <div id="dice_output"></div>
       </div>
     </div>
-    <pre id="output"></pre>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.3/math.min.js"></script>
     <script src="dist/index.browser.js"></script>
     <script type="text/javascript">
@@ -103,9 +117,6 @@
             detailedCheck = document.getElementById('dice_detailed');
             document.getElementById('dice_form').addEventListener("submit", rollHandler);
             rollHandler();
-
-            var roll = new DiceRoll('...', { detailed: true });
-            document.getElementById('output').innerText = roll.toString();
           }
         }
       }
