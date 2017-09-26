@@ -5,12 +5,10 @@ const inputProperty = Symbol('DiceRoll.input');
 const resultProperty = Symbol('DiceRoll.result');
 const expressionProperty = Symbol('DiceRoll.expression');
 
-/**
- * A DiceRoll request
- */
 export default class DiceRoll {
   /**
    * Create a new DiceRoll
+   * @constructs DiceRoll
    * @param {string} input - the request string 
    * @param {object} options - the options object
    * @param {boolean} options.detailed - if you want the detailed roll output
@@ -43,17 +41,34 @@ export default class DiceRoll {
     }
   }
 
-  /** @member {string} input - the input string */
+  /**
+   * @member {string} input - the input string
+   * @memberof DiceRoll
+   * @instance
+   * @readonly
+   */
   get input() { return this[inputProperty]; }
 
-  /** @member {string} result - the result of any dicerolls */
+  /**
+   * @member {string} result - the result of any dicerolls
+   * @memberof DiceRoll
+   * @instance
+   * @readonly
+   */
   get result() { return this[resultProperty]; }
 
-  /** @member {DiceExpression} expression - if not null, the dice expression that was parsed */
+  /**
+   * @member {DiceExpression} expression - if not null, the dice expression that was parsed
+   * @memberof DiceRoll
+   * @instance
+   * @readonly
+   */
   get expression () { return this[expressionProperty]; }
 
   /**
    * Get the result string of this DiceRoll
+   * @memberof DiceRoll
+   * @instance
    */
   toString(){
     return this.result;

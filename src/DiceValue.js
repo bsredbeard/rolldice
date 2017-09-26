@@ -7,16 +7,10 @@ const MAX_REROLL = 50;
 const basicRollPattern = /^(\d*)[dD](\d+|f)/;
 
 /**
- * A function to process rolls
- * @callback rollFunction
- * @param {RollOptions} options - the options for this roll
- * @returns {RawRoll}
- */
-
-/**
  * Do all the necessary rolls for this roll group
  * @param {DiceValue} val 
- * @param {rollFunction} roller 
+ * @param {DiceValue~rollFunction} roller 
+ * @private
  */
 const doRolls = (val, roller) => {
   let rollCount = val.dice;
@@ -64,27 +58,40 @@ const doRolls = (val, roller) => {
   }
 };
 
-/**
- * A value that represents a dice roll
- * @extends Value
- */
 export default class DiceValue extends Value {
   /**
    * Create a new dice roll value
    * @constructs DiceValue
+   * @extends Value
    * @param {string} dice - the number of dice being rolled
    * @param {string} faces - the number of faces on the dice
    * @param {string} options - the options for this rollset
    */
   constructor(dice, faces, options){
     super('0');
-    /** @member {number} dice - the number of dice being rolled */
+    /**
+     * @member {number} dice - the number of dice being rolled
+     * @memberof DiceValue
+     * @instance
+     */
     this.dice = parseInt(dice || '1', 10);
-    /** @member {(number|string)} faces - the type of dice being rolled */
+    /**
+     * @member {(number|string)} faces - the type of dice being rolled
+     * @memberof DiceValue
+     * @instance
+     */
     this.faces = faces;
-    /** @member {RollOptions} options - the options for this dice roll */
+    /**
+     * @member {RollOptions} options - the options for this dice roll
+     * @memberof DiceValue
+     * @instance
+     */
     this.options = new RollOptions(options);
-    /** @member {RawRoll[]} details - the detailed results of the roll */
+    /**
+     * @member {RawRoll[]} details - the detailed results of the roll
+     * @memberof DiceValue
+     * @instance
+     */
     this.details = [];
 
     if(!this.dice || isNaN(this.dice) || this.dice < 1 || this.dice >= 1000){
@@ -121,6 +128,8 @@ export default class DiceValue extends Value {
 
   /**
    * Perform the dice rolls for this roll
+   * @memberof DiceValue
+   * @instance
    */
   roll(){
     if(this.isValid){
@@ -132,7 +141,12 @@ export default class DiceValue extends Value {
     }
   }
 
-  /** @member {string} notation - the dice notation for this roll */
+  /**
+   * @member {string} notation - the dice notation for this roll
+   * @memberof DiceValue
+   * @instance
+   * @readonly
+   */
   get notation() {
     return `${this.dice}d${this.faces}${this.options}`;
   }
@@ -140,6 +154,8 @@ export default class DiceValue extends Value {
   /**
    * Get a string representation of this dice roll
    * @returns {string}
+   * @memberof DiceValue
+   * @instance
    */
   toString(){
     return `(${this.notation}) ${this.value}`;
@@ -148,6 +164,8 @@ export default class DiceValue extends Value {
   /**
    * Get a detailed readout of the roll results
    * @returns {string}
+   * @memberof DiceValue
+   * @instance
    */
   toDetails(){
     const detailsString = this.details
@@ -160,6 +178,8 @@ export default class DiceValue extends Value {
    * Try to find a dice roll in the provided StringInspector
    * @param {StringInspector} inspector 
    * @returns {DiceValue} or null of no roll was found
+   * @memberof DiceValue
+   * @static
    */
   static findDiceRoll(inspector){
     const maybe = inspector.peek(10);

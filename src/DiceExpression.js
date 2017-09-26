@@ -10,6 +10,7 @@ const operandExpression = /^([+*/%^()-])/;
 /**
  * Parse a DiceExpression's original expression string
  * @param {DiceExpression} result 
+ * @private
  */
 const parse = (subject) => {
   const exp = new StringInspector(subject.original.trim());
@@ -45,10 +46,6 @@ const parse = (subject) => {
   }
 };
 
-
-/**
- * Represents a parsed set of dice roll inputs
- */
 export default class DiceExpression {
   /**
    * Create a new DiceExpression, but you probably want .parse
@@ -56,21 +53,53 @@ export default class DiceExpression {
    * @param {string} original - the original string that will be parsed and prepared for execution.
    */
   constructor(original){
-    /** @member {string} original - the original string parsed into this DiceExpression */
+    /**
+     * @member {string} original - the original string parsed into this DiceExpression
+     * @memberof DiceExpression
+     * @instance
+     */
     this.original = original;
-    /** @member {string[]} segments - the string segments of the mathematical expression parsed by this object */
+    /**
+     * @member {string[]} segments - the string segments of the mathematical expression parsed by this object
+     * @memberof DiceExpression
+     * @instance
+     */
     this.segments = [];
-    /** @member {Value[]} values - the constant and dice roll values for this DiceExpression */
+    /**
+     * @member {Value[]} values - the constant and dice roll values for this DiceExpression
+     * @memberof DiceExpression
+     * @instance
+     */
     this.values = [];
-    /** @member {string} expression - the mathematical expression for this DiceExpression */
+    /**
+     * @member {string} expression - the mathematical expression for this DiceExpression
+     * @memberof DiceExpression
+     * @instance
+     */
     this.expression = '';
-    /** @member {string} notation - the expression with placeholders replaced by notation values */
+    /**
+     * @member {string} notation - the expression with placeholders replaced by notation values
+     * @memberof DiceExpression
+     * @instance
+     */
     this.notation = '';
-    /** @member {string} label - the specified label for the overall roll */
+    /**
+     * @member {string} label - the specified label for the overall roll
+     * @memberof DiceExpression
+     * @instance
+     */
     this.label = '';
-    /** @member {string} error - the error invalidating the dice expression */
+    /**
+     * @member {string} error - the error invalidating the dice expression
+     * @memberof DiceExpression
+     * @instance
+     */
     this.error = null;
-    /** @member {number} result - the total of the dice rolls */
+    /**
+     * @member {number} result - the total of the dice rolls
+     * @memberof DiceExpression
+     * @instance
+     */
     this.result = 0;
 
     parse(this);
@@ -80,12 +109,19 @@ export default class DiceExpression {
     }
   }
 
-  /** @member {boolean} isValid - if true, the expression is valid */
+  /**
+   * @member {boolean} isValid - if true, the expression is valid
+   * @memberof DiceExpression
+   * @instance
+   * @readonly
+   */
   get isValid() { return this.error == null; }
 
   /**
    * Add a value to the DiceExpression
    * @param {Value} x 
+   * @memberof DiceExpression
+   * @instance
    */
   addValue(x){
     x.name = '$' + this.values.length;
@@ -96,6 +132,8 @@ export default class DiceExpression {
   /**
    * Add an operator to the expression
    * @param {string} x - the operator to add
+   * @memberof DiceExpression
+   * @instance
    */
   addOperator(x){
     this.segments.push(x);
@@ -104,6 +142,8 @@ export default class DiceExpression {
   /**
    * Update the notation field with a value's notation
    * @param {Value} value 
+   * @memberof DiceExpression
+   * @instance
    */
   updateNotation(value) {
     this.notation = this.notation.replace(value.name, value.notation);
@@ -111,6 +151,8 @@ export default class DiceExpression {
 
   /**
    * build and execute this DiceExpression
+   * @memberof DiceExpression
+   * @instance
    */
   execute(){
     if(this.isValid){
@@ -140,18 +182,34 @@ export default class DiceExpression {
     }
   }
 
+  /**
+   * Get a simple string representation of the DiceExpression
+   * @memberof DiceExpression
+   * @instance
+   * @returns {string}
+   */
   toString(){
     if(!this.isValid){
       return this.error;
     }
-    return `Total: ${this.result}`;
+    const label = this.label ? ' ' + this.label : '';
+    return `Total: ${this.result}${label}`;
   }
 
+  /**
+   * Get a detailed string representation of the DiceExpression and all rolls
+   * @memberof DiceExpression
+   * @instance
+   * @returns {string}
+   */
   toDetails(){
     if(!this.isValid){
       return this.error;
     }
     const lines = [];
+    if(this.label){
+      lines.push(this.label);
+    }
     lines.push(`Total: ${this.result}`);
     lines.push(`Formula: ${this.notation}`);
     lines.push('Rolls:');

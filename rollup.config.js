@@ -1,40 +1,55 @@
-import multiEntry from 'rollup-plugin-multi-entry';
 import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
+import babel from 'rollup-plugin-babel'
 
 export default [
   {
     plugins: [
-      multiEntry(),
       commonjs(),
-      nodeResolve()
+      nodeResolve(),
+      babel({
+        exclude: 'node_modules/**'
+      })
     ],
-    entry: './test/*.spec.js',
-    dest: 'dist/test/index.js',
-    format: 'cjs',
-    external: [
-      'chai',
-      'mathjs'
+    external: [ 'mathjs' ],    
+    input: './src/index.js',
+    output: [
+      {
+        file: 'dist/index.cjs.js',
+        format: 'cjs'
+      },
+      {
+        file: 'dist/index.esm.js',
+        format: 'es'
+      },
+      {
+        file: 'dist/index.browser.js',
+        format: 'es',
+        globals: {
+          'mathjs': 'math'
+        }
+      }
     ]
   },
   {
     plugins: [
       commonjs(),
-      nodeResolve()
+      nodeResolve(),
+      babel({
+        exclude: 'node_modules/**'
+      })
     ],
-    entry: './src/index.js',
-    dest: 'dist/index.cjs.js',
-    format: 'cjs',
-    external: [ 'mathjs' ]
-  },
-  {
-    plugins: [
-      commonjs(),
-      nodeResolve()
-    ],
-    entry: './src/index.js',
-    dest: 'dist/index.esm.js',
-    format: 'es',
-    external: [ 'mathjs' ]
+    external: [ 'mathjs' ],
+    input: './src/index.js',
+    output: [
+      {
+        file: 'dist/index.browser.js',
+        name: 'DiceRoll',
+        format: 'iife',
+        globals: {
+          'mathjs': 'math'
+        }
+      }
+    ]
   }
 ];

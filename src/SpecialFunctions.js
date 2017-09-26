@@ -4,7 +4,7 @@ const syntax = [
   'roll: [<number of dice>]d<number of sides>[<modifiers>]',
   '      default number of dice: 1',
   'number of sides: any integer, or f (for Fudge dice)',
-  'operator: + or -',
+  'operator: +, -, *, /, %, (, or )',
   'constant: any integer',
   'modifiers:',
   '  ! - exploding dice, a maximum roll value causes recursive reroll and summation',

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Demo: mentalspike/rolldice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+      *{
+        box-sizing:border-box;
+      }
+      body{
+        font-family: sans-serif;
+        background-color: #aaa;
+        padding:0;
+        margin:0;
+      }
+      h1{
+        margin-top:0;
+      }
+      .container{
+        max-width:800px;
+        min-height:100vh;
+        margin:0 auto;
+        background-color:white;
+        padding: 0 1em;
+      }
+      .dice-area{
+        max-height:100vh;
+        padding-top:1em;
+        padding-bottom:1em;
+        display:flex;
+        flex-direction:column;
+      }
+      .dice-form{
+        flex-shrink:0;
+      }
+      #dice_output{
+        overflow:auto;
+        flex-grow:2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="heading">
+        <h1>rolldice</h1>
+        <p>
+          This script allows you to easily parse and report dice rolls and equations written with dice notation.
+          The syntax of this dice rolling script is closest to that of roll20, however it is a much simplified
+          version of their full set of functionality.
+        </p>
+        <p>
+          Feel free to explore the rolling syntax and functionality using this page. Enter "help" as
+          your roll to see the supported syntax. You can also <a href="docs/index.html">explore the docs</a>.
+        </p>
+      </div>
+      <div class="dice-area">
+        <div class="dice-form">
+          <form id="dice_form">
+            <input type="text" id="dice_command" value="2d6 + 4d8 - 3 * d10 + (4d20!k1 % 5) for a very silly roll example" placeholder="roll expression" />
+            <input type="checkbox" id="dice_detailed" checked />&nbsp;Detailed output?
+            <button type="submit">Roll</button>
+          </form>
+        </div>
+        <div id="dice_output"></div>
+      </div>
+    </div>
+    <pre id="output"></pre>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.3/math.min.js"></script>
+    <script src="dist/index.browser.js"></script>
+    <script type="text/javascript">
+      var initialized = false, diceInput, diceOutput, detailedCheck;
+      
+      function isDetailed(){
+        return detailedCheck.checked;
+      }
+
+      function rollText(){
+        return diceInput.value;
+      }
+
+      function rollHandler(evt) {
+        if(evt && evt.preventDefault){
+          evt.preventDefault();
+        }
+        var roll = new DiceRoll(rollText(), { detailed: isDetailed() });
+        var pre = document.createElement('PRE');
+        pre.textContent = roll.toString();
+
+        if(diceOutput.children.length){
+          diceOutput.insertBefore(pre, diceOutput.children[0]);
+        } else {
+          diceOutput.appendChild(pre);
+        }
+      }
+
+      function loadHandler(evt) {
+        if(document.readyState === 'interactive'){
+          if(!initialized){
+            initialized = true;
+            diceInput = document.getElementById('dice_command');
+            diceOutput = document.getElementById('dice_output');
+            detailedCheck = document.getElementById('dice_detailed');
+            document.getElementById('dice_form').addEventListener("submit", rollHandler);
+            rollHandler();
+
+            var roll = new DiceRoll('...', { detailed: true });
+            document.getElementById('output').innerText = roll.toString();
+          }
+        }
+      }
+
+      document.addEventListener("load", loadHandler);
+      document.addEventListener("readystatechange", loadHandler);
+    </script>
+  </body>
+</html>

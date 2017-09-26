@@ -47,6 +47,7 @@ const comparisonReroll = (match, operator, orEquals) => {
  * Parse the options for the roll options object
  * @param {RollOptions} ro
  * @param {StringInspector} options 
+ * @private
  */
 const parseOptions = (ro, options) => {
   while(ro[props.isValid] && options.hasNext){
@@ -129,9 +130,6 @@ const parseOptions = (ro, options) => {
   }
 };
 
-/**
- * An object to parse and represent the options for a particular roll
- */
 export default class RollOptions {
   /**
    * Create a new set of roll options
@@ -151,26 +149,68 @@ export default class RollOptions {
 
     parseOptions(this, new StringInspector(options));
   }
-  /** @member {boolean} isValid - if true, the roll options are valid */
+  /**
+   * @member {boolean} isValid - if true, the roll options are valid
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get isValid() { return this[props.isValid]; }
-  /** @member {string} error - if truthy, the error that was encountered while parsing the options */
+  /**
+   * @member {string} error - if truthy, the error that was encountered while parsing the options
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get error() { return this[props.error]; }
-  /** @member {(number|boolean)} keep - if true-ish, keep only that number of dice rolls from the roll set  */
+  /**
+   * @member {(number|boolean)} keep - if true-ish, keep only that number of dice rolls from the roll set
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get keep() { return this[props.keep]; }
-  /** @member {(number|boolean)} drop - if true-ish, drop that number of dice rolls from the roll set  */
+  /**
+   * @member {(number|boolean)} drop - if true-ish, drop that number of dice rolls from the roll set
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get drop() { return this[props.drop]; }
-  /** @member {boolean} highestRolls - if true, keep/drop applies to the highest rolls */
+  /**
+   * @member {boolean} highestRolls - if true, keep/drop applies to the highest rolls
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get highestRolls() { return this[props.highestRolls]; }
-  /** @member {boolean} lowestRolls - if true, keep/drop applies to the lowest rolls */
+  /**
+   * @member {boolean} lowestRolls - if true, keep/drop applies to the lowest rolls
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get lowestRolls() { return this[props.lowestRolls]; }
-  /** @member {boolean} explodingRolls - if true, max value rolls should be rolled an additional time */
+  /**
+   * @member {boolean} explodingRolls - if true, max value rolls should be rolled an additional time
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get explodingRolls() { return this[props.explodingRolls]; }
-  /** @member {Array} reroll - the collection of reroll callbacks */
+  /**
+   * @member {Array} reroll - the collection of reroll callbacks
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
   get reroll() { return this[props.reroll]; }
 
   /**
    * Check a roll to see if it needs to be rerolled
    * @param {number} num - the roll value to check for needs to reroll
+   * @memberof RollOptions
+   * @instance
    */
   needReroll(num){
     for(const rule of this.reroll){
@@ -181,6 +221,11 @@ export default class RollOptions {
     return false;
   }
 
+  /**
+   * Get the RollOptions original string
+   * @memberof RollOptions
+   * @instance
+   */
   toString(){
     return this[props.original];
   }
@@ -189,6 +234,7 @@ export default class RollOptions {
    * Try to get all possible options from a string inspector
    * @param {StringInspector} parser 
    * @returns {string} the resulting options string
+   * @memberof RollOptions
    */
   static findOptions(parser) {
     const options = [];

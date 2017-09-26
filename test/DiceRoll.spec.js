@@ -8,6 +8,12 @@ describe('DiceRoll', function(){
     expect(roll.toString()).to.equal('Invalid roll: No dice to roll. Try help');
   });
   
+  it('should response to valid simple rolls', function(){
+    const roll = new Dice('2d6');
+    expect(roll.expression.isValid, roll.expression.error).to.equal(true);
+    expect(roll.expression.result).to.be.greaterThan(0);
+  });
+
   it('should respond to valid complex rolls', function(){
     const roll = new Dice('4d6k2 + 3d10-8', { detailed: true });
     expect(roll.expression.isValid, roll.expression.error).to.equal(true);

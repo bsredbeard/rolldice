@@ -1,9 +1,16 @@
 import './RawRoll';
 
 /**
+ * Internal utilities used by various functions in the library
+ * @module internal/utils
+ */
+
+/**
  * Sort function for an array of RawRoll objects
  * @param {RawRoll} a 
  * @param {RawRoll} b 
+ * @returns {number}
+ * @memberof module:internal/utils
  */
 export const rollSort = (a, b) => {
   if(a.value < b.value){
@@ -18,6 +25,8 @@ export const rollSort = (a, b) => {
 /**
  * Sum the values of a collection of rolls
  * @param {RawRoll[]} rolls 
+ * @returns {number}
+ * @memberof module:internal/utils
  */
 export const sumRolls = (rolls) => {
   return rolls.map(r => r.value)
@@ -29,6 +38,8 @@ export const sumRolls = (rolls) => {
  * @param {RawRoll[]} rolls - the array of rolls
  * @param {number} start - the start index (included)
  * @param {number} end - the end index (excluded)
+ * @returns {RawRoll[]}
+ * @memberof module:internal/utils
  */
 export const trimRolls = (rolls, start, end) => {
   rolls.sort(rollSort);
@@ -47,6 +58,7 @@ const numericTest = /[0-9.]/;
  * Check if a string contains a number
  * @param {string} str 
  * @returns {boolean}
+ * @memberof module:internal/utils
  */
 export const isNumeric = (str) => {
   return numericTest.test(str);

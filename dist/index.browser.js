@@ -1,6 +1,5 @@
+var DiceRoll = (function (math) {
 'use strict';
-
-var math = require('mathjs');
 
 var asyncGenerator = function () {
   function AwaitValue(value) {
@@ -1637,4 +1636,6 @@ var DiceRoll = function () {
   return DiceRoll;
 }();
 
-module.exports = DiceRoll;
+return DiceRoll;
+
+}(math));
