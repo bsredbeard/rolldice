@@ -1,0 +1,14 @@
+{
+  "source":{
+    "include": [ "README.md", "src" ]
+  },
+  "opts":{
+    "recurse": true,
+    "destination": "docs"
+  },
+  "templates":{
+    "default":{
+      "outputSourceFiles": false
+    }
+  }
+}

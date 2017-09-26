@@ -1,23 +1,40 @@
 {
   "name": "rolldice",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A library to roll some dice.",
   "keywords": [
     "roll",
     "dice"
   ],
-  "main": "index.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "browser": "dist/index.browser.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/mentalspike/rolldice.git"
   },
   "scripts": {
-    "test": "mocha test/*.js"
+    "build": "rollup -c",
+    "test": "mocha -r reify test/*.js",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "author": "mentalspike",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^2.4.5"
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.1.2",
+    "eslint": "^4.7.2",
+    "jsdoc": "^3.5.5",
+    "mocha": "^3.5.3",
+    "reify": "^0.12.3",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-commonjs": "^8.2.1",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  },
+  "dependencies": {
+    "mathjs": "^3.16.3"
   }
 }

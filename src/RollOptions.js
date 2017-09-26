@@ -1,201 +1,262 @@
-/**
- * @callback rerollCallback
- */
+import StringInspector from './StringInspector';
 
-/**
- * Creates an expression to reroll values equal to a certain result
- * @param {number} val - the forbidden value that triggers a reroll
- * @returns {rerollCallback}
- */
-function createBasicReroll(val){
-  return function(diceValue){
-    return diceValue === val;
-  }
-}
+const props = Object.freeze({
+  original: Symbol('property:original'),
+  isValid: Symbol('property:isValid'),
+  error: Symbol('property:error'),
+  keep: Symbol('property:keep'),
+  drop: Symbol('property:drop'),
+  highestRolls: Symbol('property:highestRolls'),
+  lowestRolls: Symbol('property:lowestRolls'),
+  explodingRolls: Symbol('property:explodingRolls'),
+  reroll: Symbol('property:reroll')
+});
 
-/**
- * Creates an expression to reroll values less than a certain amount
- * @param {number} val - the number to beat
- * @param {boolean} [lte] - true if the expression is less-than-or-equal-to
- * @returns {rerollCallback}
- */
-function createLessThanReroll(val, lte){
-  return function(diceValue){
-    if(lte) {
-      return diceValue <= val;
-    }
-    return diceValue < val;
-  }
-}
+// the characters that denote the start of a roll option
+const commandCharacters = '!kdr';
+// the regex that can parse a keep or drop command argument
+const keepDropArguments = /^([hl]?)([0-9]+)/i;
+// the regex that can parse a reroll argument
+const rerollArguments = /^([<>]?=?)(\d+)/;
 
-/**
- * Creates an expression to reroll values greater than a certain amount
- * @param {number} val - the number to beat
- * @param {boolean} [gte] - true if the expression is greater-than-or-equal-to
- * @returns {rerollCallback}
- */
-function createGreaterThanReroll(val, gte){
-  return function(diceValue){
-    if(gte) {
-      return diceValue >= val;
-    }
-    return diceValue > val;
-  }
-}
+const isCommandChar = c => c && commandCharacters.indexOf(c) >= 0;
 
-/**
- * Returns true if a roll must be rerolled
- * @param {number} num - the number that was rolled
- * @returns {boolean} true if the roll must be re-rolled
- */
-function needReroll(num){
-  var rule;
-  for(var jk in this.reroll){
-    rule = this.reroll[jk];
-    if(rule(num)){
-      return true;
-    }
-  }
-  return false;
-}
+const simpleReroll = match => {
+  return num => num === match;
+};
 
-/**
- * Parse the roll options out of the given options string
- * @class
- * @param {string} options - the options to parse for a given roll
- */
-function RollOptions(options){
-  /**
-   * @member {number} [keep] If truthy, keep only a certain number of dice from the roll
-   */
-  this.keep = false;
-  /**
-   * @member {number} [drop] - If truthy, drop a certain number of dice from the roll
-   */
-  this.drop = false;
-  /**
-   * @member {boolean} [explodingRolls] - if true, rolling the highest die face will cause an additional roll to happen
-   */
-  this.explodingRolls = false;
-  /**
-   * @member {number} [highestRolls] - If truthy, keep/drop the highest rolls
-   */
-  this.highestRolls = false;
-  /**
-   * @member {number} [lowestRolls] - If truthy, keep/drop the lowest rolls
-   */
-  this.lowestRolls = false;
-  /**
-   * @member {rerollCallback[]} reroll - Any rules to examine a roll and determine if it should be rerolled
-   */
-  this.reroll = [];
-  /**
-   * @member {boolean} isValid - If these options were parsed successfully
-   */
-  this.isValid = true;
-  /**
-   * Determine if a single roll needs to be rerolled by consulting this.reroll
-   * @func needReroll
-   */
-  this.needReroll = needReroll.bind(this);
-  
-  // r4r2 = reroll 4's and 2's
-  // r<3 = reroll anything less than 3
-  // r>3 = reroll anything greather than 3
-  // k4 or kh4 = keep 4 highest rolls
-  // d4 or dl4 = drop 4 lowest rolls
-  var optString = options;
-  var optionPattern = /^([rkd!])([^rkd!]*)/i;
-  var parseKeepDrop = (function(kd, val, dfltHighest){
-    if(val){
-      val = val.toLowerCase();
-      var kdPattern = /([hl]?)([0-9]+)/i;
-      var match = kdPattern.exec(val);
-      if(match){
-        if(!match[1] && dfltHighest){
-          this.highestRolls = true;
-        } else if(match[1] === 'h'){
-          this.highestRolls = true;
-        } else {
-          this.lowestRolls = true;
-        }
-        //make sure the parsed amount of dice is a valid number
-        var amt = parseInt(match[2], 10);
-        if(isNaN(amt) || !amt){
-          this.isValid = false;
-        } else {
-          this[kd] = amt;
-        }
-      } else {
-        this.isValid = false;
-      }
+const comparisonReroll = (match, operator, orEquals) => {
+  if(operator === '>'){
+    if(orEquals){
+      return num => num >= match;
     } else {
-      this.isValid = false;
+      return num => num > match;
     }
-  }).bind(this);
-  var parseReroll = (function(val){
-    var rerollPattern = /([<>]?)([=]?)([0-9]+)/
-    var match = rerollPattern.exec(val);
-    if(match){
-      var rolledValue = parseInt(match[3], 10);
-      if(isNaN(rolledValue) || !rolledValue){
-        this.isValid = false;
-      } else {
-        var thanEquals = false;
-        if(match[2]){
-          thanEquals = true;
-        }
-        if(match[1] === '<'){
-          this.reroll.push(createLessThanReroll(rolledValue, thanEquals));
-        } else if(match[1] === '>') {
-          this.reroll.push(createGreaterThanReroll(rolledValue, thanEquals));
-        } else {
-          this.reroll.push(createBasicReroll(rolledValue));
-        }
-      }
+  } else if(operator === '<'){
+    if(orEquals){
+      return num => num <= match;
     } else {
-      this.isValid = false;
+      return num => num < match;
     }
-  }).bind(this);
-  while(optString){
-    var match = optionPattern.exec(optString);
-    if(match){
-      var optType = match[1].toLowerCase();
-      var optValue = match[2];
-      switch(optType){
-        case 'r':
-          parseReroll(optValue);
+  } else {
+    return () => false;
+  }
+};
+
+/**
+ * Parse the options for the roll options object
+ * @param {RollOptions} ro
+ * @param {StringInspector} options 
+ * @private
+ */
+const parseOptions = (ro, options) => {
+  while(ro[props.isValid] && options.hasNext){
+    const discard = options.nextUntil(isCommandChar);
+    if(discard.trim()){
+      throw new Error('Discarded information found in RollOptions: ' + discard);
+    }
+    const cmd = options.next();
+    if(cmd !== false){
+      switch(cmd){
+        case '!':
+          ro[props.explodingRolls] = true;
           break;
         case 'k':
-          if(this.keep || this.drop) this.isValid = false;
-          this.keep = true;
-          parseKeepDrop('keep', optValue, true);
+          const keepArgs = options.nextWith(keepDropArguments);
+          if(keepArgs){
+            if(ro[props.drop]){
+              ro[props.isValid] = false;
+              ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
+            } else {
+              if(keepArgs[1] === 'l' || keepArgs[1] === 'L'){
+                ro[props.lowestRolls] = true;
+                ro[props.highestRolls] = false;
+              } else {
+                ro[props.highestRolls] = true;
+                ro[props.lowestRolls] = false;
+              }
+              ro[props.keep] = parseInt(keepArgs[2], 10);
+            }
+          } else {
+            ro[props.isValid] = false;
+            ro[props.error] = 'You must specify valid options for the (k)eep modifier, e.g. k3, kl2, kh2';
+          }
           break;
         case 'd':
-          if(this.keep || this.drop) this.isValid = false;
-          this.drop = true;
-          parseKeepDrop('drop', optValue, false);
+          const dropArgs = options.nextWith(keepDropArguments);
+          if(dropArgs){
+            if(ro[props.keep]){
+              ro[props.isValid] = false;
+              ro[props.error] = 'Cannot enable both "keep" and "drop" options simultaneously.';
+            } else {
+              if(dropArgs[1] === 'h' || dropArgs[1] === 'H'){
+                ro[props.highestRolls] = true;
+                ro[props.lowestRolls] = false;
+              } else {
+                ro[props.lowestRolls] = true;
+                ro[props.highestRolls] = false;
+              }
+              ro[props.drop] = parseInt(dropArgs[2], 10);
+            }
+          } else {
+            ro[props.isValid] = false;
+            ro[props.error] = 'You must specify valid options for the (d)rop modifier, e.g. d3, dl2, dh3';
+          }
           break;
-        case '!':
-          this.explodingRolls = true;
+        case 'r':
+          const rerollArgs = options.nextWith(rerollArguments);
+          if(rerollArgs){
+            const target = parseInt(rerollArgs[2], 10);
+            if(isNaN(target)){
+              ro[props.isValid] = false;
+              ro[props.error] = 'You must supply a number for reroll options';
+            } else {
+              if(rerollArgs[1].length){
+                const operator = rerollArgs[1][0];
+                const orEquals = rerollArgs[1].length > 1;
+                ro.reroll.push(comparisonReroll(target, operator, orEquals));
+              } else {
+                //simple match reroll
+                ro.reroll.push(simpleReroll(target));
+              }
+            }
+          } else {
+            ro[props.isValid] = false;
+            ro[props.error] = 'You must specify valid options for the (r)eroll modifier, e.g. r1, r<5, r>=10';
+          }
           break;
       }
-      //advance the string
-      optString = optString.length > match[0].length ? optString.substr(match[0].length) : null;
-    } else {
-      //no more optionts to find
-      optString = null;
     }
   }
-  
-  //cleanup
-  parseKeepDrop = null;
-  parseReroll = null;
-  optionPattern = null;
-  
-  this.toString = function(){
-    return options;
-  };
-}
+};
 
-module.exports = RollOptions;
+export default class RollOptions {
+  /**
+   * Create a new set of roll options
+   * @param {string} options 
+   * @constructs RollOptions
+   */
+  constructor(options){
+    this[props.original] = options;
+    this[props.isValid] = true;
+    this[props.error] = '';
+    this[props.keep] = false;
+    this[props.drop] = false;
+    this[props.highestRolls] = false;
+    this[props.lowestRolls] = false;
+    this[props.explodingRolls] = false;
+    this[props.reroll] = []
+
+    parseOptions(this, new StringInspector(options));
+  }
+  /**
+   * @member {boolean} isValid - if true, the roll options are valid
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get isValid() { return this[props.isValid]; }
+  /**
+   * @member {string} error - if truthy, the error that was encountered while parsing the options
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get error() { return this[props.error]; }
+  /**
+   * @member {(number|boolean)} keep - if true-ish, keep only that number of dice rolls from the roll set
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get keep() { return this[props.keep]; }
+  /**
+   * @member {(number|boolean)} drop - if true-ish, drop that number of dice rolls from the roll set
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get drop() { return this[props.drop]; }
+  /**
+   * @member {boolean} highestRolls - if true, keep/drop applies to the highest rolls
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get highestRolls() { return this[props.highestRolls]; }
+  /**
+   * @member {boolean} lowestRolls - if true, keep/drop applies to the lowest rolls
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get lowestRolls() { return this[props.lowestRolls]; }
+  /**
+   * @member {boolean} explodingRolls - if true, max value rolls should be rolled an additional time
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get explodingRolls() { return this[props.explodingRolls]; }
+  /**
+   * @member {Array} reroll - the collection of reroll callbacks
+   * @memberof RollOptions
+   * @instance
+   * @readonly
+   */
+  get reroll() { return this[props.reroll]; }
+
+  /**
+   * Check a roll to see if it needs to be rerolled
+   * @param {number} num - the roll value to check for needs to reroll
+   * @memberof RollOptions
+   * @instance
+   */
+  needReroll(num){
+    for(const rule of this.reroll){
+      if(rule(num)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get the RollOptions original string
+   * @memberof RollOptions
+   * @instance
+   */
+  toString(){
+    return this[props.original];
+  }
+
+  /**
+   * Try to get all possible options from a string inspector
+   * @param {StringInspector} parser 
+   * @returns {string} the resulting options string
+   * @memberof RollOptions
+   */
+  static findOptions(parser) {
+    const options = [];
+    while(isCommandChar(parser.peek())){
+      const letter = parser.next();
+      options.push(letter);
+      switch(letter){
+        case 'k':
+        case 'd':
+          const kdArgs = parser.nextWith(keepDropArguments);
+          if(kdArgs){
+            options.push(kdArgs[0]);
+          }
+          break;
+        case 'r':
+          const rArgs = parser.nextWith(rerollArguments);
+          if(rArgs){
+            options.push(rArgs[0]);
+          }
+          break;
+      }
+    }
+    return options.join('');
+  }
+}
